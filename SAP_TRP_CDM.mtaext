@@ -1,0 +1,35 @@
+_schema-version: '3.1'
+ID: SAP_TRP_CDM_DATA_MIGRATION_MIT_EXT
+extends: SAP_TRP_CDM_DATA_MIGRATION_MIT
+
+resources:
+
+  - name: trp-cdm-migration-hdi
+    parameters:
+      service-name: TRP_CDM_MIGRATION_MIT
+      config:
+        schema: SAP_TRP_CDM_MIG_MIT
+
+  - name: TRP_TM
+    parameters:
+      service-name: TRP_DB_TM_SERVICE_MIT5_TM94
+    
+  - name: trp_hdi_cdm_db
+    parameters:
+      service-name: TRP_CDM_MIT5_TRP50
+
+  - name: trp4_hdi_rv_db
+    parameters:
+      service-name: TRP_DB_RV_SERVICE_MIT5
+
+  - name: trp_hdi_rv2_db
+    parameters:
+      service-name: TRP_RV2_MIT5_TRP50    
+        
+  - name: TRP_SCH_JOBS
+    parameters:
+      service-name: TRP_SCH_JOBS
+
+  - name: SAP_TRP_SYNONYM_GRANTOR_SRV
+    parameters:
+      service-name: SAP_TRP_SYN_GRANTOR_SRV      

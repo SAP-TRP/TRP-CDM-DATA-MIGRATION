@@ -1,0 +1,174 @@
+PROCEDURE  "SAP_TRP_DB_P_EXT_CDM_MIGRATION_RESOURCES"() 
+    LANGUAGE SQLSCRIPT
+    SQL SECURITY INVOKER
+AS
+BEGIN
+
+DECLARE re_last_update_time TIMESTAMP;
+DECLARE rs_last_update_time TIMESTAMP;
+DECLARE rch_last_update_time TIMESTAMP;
+DECLARE ra_last_update_time TIMESTAMP;
+DECLARE rd_last_update_time TIMESTAMP;
+DECLARE et_last_update_time TIMESTAMP;
+DECLARE rc_last_update_time TIMESTAMP;
+DECLARE tolerance VARCHAR(500);
+
+/*SELECT MAX(ChangedOn) INTO re_last_update_time FROM  "SAP_TRP_DB_RESOURCES";
+SELECT MAX(ChangedOn) INTO rs_last_update_time FROM  "SAP_TRP_DB_RESOURCESTATUS";
+SELECT MAX(ChangedOn) INTO rch_last_update_time FROM  "SAP_TRP_DB_RESOURCECHANGEHISTORIES";
+SELECT MAX(ChangedOn) INTO rd_last_update_time FROM  "SAP_TRP_DB_RESOURCEDOWNTIMES";
+SELECT MAX(ChangedOn) INTO et_last_update_time FROM  "SAP_TRP_DB_EQUIPMENTTYPES";
+SELECT MAX(ChangedOn) INTO rc_last_update_time FROM  "SAP_TRP_DB_RESOURCECATEGORY";
+
+SELECT CASE WHEN VALUE='X' THEN 0.5 ELSE VALUE END AS tolerance INTO tolerance  --User is expected to maintain value in hrs default is 30mins
+FROM "sap.tm.trp.db.systemmanagement.customization::t_general_parameters" 
+WHERE NAME='cdm_delta_tolerance';*/
+
+    UPSERT "SAP_TRP_DB_RESOURCES"
+    SELECT
+        T1.LOG_SYS as SysID,
+        T1.Resource_ID,
+        T1.RESOURCE_NAME as Name,
+        T3.LOCID as LocationId,
+        T1.RESTYPE as ResourceType,
+        T1.RES_CLASS as ResourceClass,
+        T1.EQUITYPE as EquipentGroup,
+		T1.RESOURCE_TYPE_CODE as EquipmentCode,
+        T2.BLOCK_STATUS_CODE as PlaningBlockStatus,
+        T1.OWNERSHIP_CODE as OwnershipCode,
+        T1.LEASE_CONTRACT_REF as LeaseContract,
+        T1.SPECIAL_INSTRUCTION as Instruction,
+        T1.TEU_COUNT as TEUCount,
+        case TO_TIMESTAMP(T1.OFF_HIRE_DT)
+            when ''
+            then null
+            else TO_TIMESTAMP(T1.OFF_HIRE_DT)
+        end as OffHireDate,
+        T1.OFF_HIRE_LOC as OffHireLocation,
+        case TO_TIMESTAMP(T1.ON_HIRE_DT)
+            when ''
+            then null
+            else TO_TIMESTAMP(T1.ON_HIRE_DT)
+        end as OnHireDate,
+        T1.ON_HIRE_LOC as OnHireLocation,
+        TO_TIMESTAMP(T1.CHANGEDATE) as ChangedOn,
+        T3.CHANGEUSER as ChangedBy  from "sap.tm.trp.db.semantic.resource::v_resource_master" T1
+	inner join "sap.tm.trp.db.semantic.resource::v_resource_status" T2 on  T1.resource_id=T2.resource_id and T1.LOG_SYS=T2.LOG_SYS
+	INNER JOIN "sap.tm.trp.db.semantic::/SAPAPO/RES_HEAD" AS T3 
+    ON T1.Resource_ID = T3.RESUID and T1.MANDT = T3.MANDT AND T1.LOG_SYS=T3.LOG_SYS ;
+    --where (:re_last_update_time IS NULL OR TO_TIMESTAMP(T1.CHANGEDATE) > ADD_SECONDS(:re_last_update_time,-1*60*60*:tolerance));
+
+    UPSERT "SAP_TRP_DB_RESOURCESTATUS"
+    SELECT 
+        LOG_SYS as SysID,
+        RESOURCE_ID as ResourceID,
+        MOVEMENT_STATUS_CODE as MovementStatus,
+        LOADING_STATUS_CODE as LoadingStatus,
+        TO_TIMESTAMP(CHANGED_ON) as ChangedOn,
+        GTI_ON as GateInOn,        
+        CURRENT_LOCATION_ID as CurrentLocationID,
+        CURRENT_LOCATION as CurrentLocation
+    FROM "sap.tm.trp.db.semantic.resource::v_resource_status";
+    --where (:rs_last_update_time IS NULL OR TO_TIMESTAMP(CHANGED_ON) > ADD_SECONDS(:re_last_update_time,-1*60*60*:tolerance));
+
+    
+    
+    UPSERT "SAP_TRP_DB_RESOURCECHANGEHISTORIES"
+    SELECT 
+        T1.LOG_SYS as SysID,
+        DB_KEY as ChangeKey,
+        T3.RESID as ResourceID,
+        T2.SCUGUID22 as LocationID,
+        TRK_CAT as ChangeCategory,
+        TO_TIMESTAMP(TRK_LOG_TIME) as ChangedOn,
+        LOG_TABLE as ChangedTable,
+        LOG_FIELD as ChangedField,
+        VALUE_NEW as NewValue,
+        VALUE_OLD as OldValue
+    FROM "sap.tm.trp.db.semantic::/TRP/RES_TRKLOG" T1
+    INNER JOIN "sap.tm.trp.db.semantic::/SCMB/TOENTITY" T2 on T1.LOCATION_UUID = T2.SCUGUID and T1.LOG_SYS = T2.LOG_SYS
+    INNER JOIN "sap.tm.trp.db.semantic::/SCMB/RESTMSHD" T3 on T1.RESOURCE_ID = T3.TMSRESUID and T1.LOG_SYS = T3.LOG_SYS;
+    --where (:rch_last_update_time IS NULL OR TO_TIMESTAMP(TRK_LOG_TIME) > ADD_SECONDS(:rch_last_update_time,-1*60*60*:tolerance));
+
+    UPSERT "SAP_TRP_DB_RESOURCEDOWNTIMES"
+    SELECT 
+        T1.LOG_SYS as SysID,
+        T1.DOWNID as DowntimeID,
+        T1.RESOURCE_ID as ResourceID,
+        T1.LOCATION_ID as LocationID,
+        TO_TIMESTAMP(T1.BEGIN_TIMESTAMP) as DowntimeFrom,
+        TO_TIMESTAMP(T1.END_TIMESTAMP) as DowntimeTo,
+        TO_TIMESTAMP(T2.CHANGEDATE) as ChangedOn
+    FROM "sap.tm.trp.db.semantic.resource::v_resource_downtime" T1
+    INNER JOIN "sap.tm.trp.db.semantic.resource::v_resource_master" T2
+        ON T1.RESOURCE_ID=T2.RESOURCE_ID;
+    --where (:rd_last_update_time IS NULL OR TO_TIMESTAMP(T2.CHANGEDATE) > ADD_SECONDS(:rd_last_update_time,-1*60*60*:tolerance));
+
+    UPSERT "SAP_TRP_DB_EQUIPMENTTYPES" --Change to v_resource_type
+    SELECT
+        LOG_SYS as SysID, 
+        EQUI_TYPE as EquipmentGroup,
+        RESOURCE_TYPE_CODE as EquipmentCode,
+        RESOURCE_TYPE_DESC as Description,
+        TEU_COUNT as TEUCount,
+        NULL as ChangedOn
+    FROM "sap.tm.trp.db.semantic.resource::v_resource_type" where resource_category='CN'; 
+    --where (:et_last_update_time IS NULL OR TO_TIMESTAMP(T2.CHANGEDATE) > ADD_SECONDS(:et_last_update_time,-1*60*60*:tolerance));       
+    
+    UPSERT "SAP_TRP_DB_RESOURCECATEGORY"
+    SELECT 
+        '' as SysID,
+        T1.CODE as Code,
+        T1.MAPPING_CODE as MappingCode,
+        T1.DESC as Description,
+        NULL as ChangedOn        
+    FROM "sap.tm.trp.db.semantic.resource::v_resource_category" T1;
+    --where (:rc_last_update_time IS NULL OR TO_TIMESTAMP(T3.CHANGED_ON) > ADD_SECONDS(:et_last_update_time,-1*60*60*:tolerance)); 
+
+    --json collection - resource 
+    -- SELECT COUNT(1) INTO res_cnt FROM RESOURCE;
+    -- IF :res_cnt > 0 THEN 
+    --     SELECT "Attributes"."CHANGEDATE" INTO res_last_update_time FROM RESOURCE ORDER BY "Attributes"."CHANGEDATE" DESC LIMIT 1;
+    --     RES_IDS=SELECT DISTINCT RESOURCE_ID FROM RESOURCE;
+    -- END IF;
+
+    UPSERT "SAP_TRP_DB_RESOURCEATTRIBUTES"
+    SELECT LOG_SYS as SysID, RESOURCE_ID as ResourceID, JSON_QUERY('{"RESOURCE_NAME": "' || RESOURCE_NAME || '",'|| +
+	' "RESOURCE_TYPE_CODE": "'|| RESOURCE_TYPE_CODE  || '",'|| +
+	' "TARE_WEIGHT": "'|| TARE_WEIGHT  || '",'|| +
+	' "MAX_GROSS_WEIGHT": "'|| MAX_GROSS_WEIGHT  || '",'|| +
+	' "MAX_GROSS_WEIGHT_UOM": "'|| MAX_GROSS_WEIGHT_UOM  || '",'|| +
+	' "MAX_CARGO_WEIGHT": "'|| PAYLOAD_WEIGHT  || '",'|| +
+	' "INSIDE_LENGTH": "'|| INTERNAL_LENGTH  || '",'|| +
+	' "INSIDE_HEIGHT": "'|| INTERNAL_HEIGHT  || '",'|| +
+	' "DOOR_WIDTH": "'|| DOOR_WIDTH  || '",'|| +
+	' "DOOR_HEIGHT": "'|| DOOR_HEIGHT  || '",'|| +
+	' "MAX_LENGTH": "'|| MAX_LENGTH  || '",'|| +
+	' "VOLUME": "'|| CUBIC_CAPACITY  || '",'|| +
+	' "TEU_COUNT": "'|| TEU_COUNT  || '",'|| +
+	' "PLN_BLOCK": "'|| PLN_BLOCK  || '",'|| +
+	' "RESOURCE_CONDITION": "'|| RESOURCE_CONDITION  || '",'|| +
+    ' "FOOD_GRADE": "'|| FOOD_GRADE_IND || '",'|| +
+    ' "LEASING_ID": "'|| LEASE_CONTRACT_REF  || '",'|| +
+    ' "TEMP_CTRL_MIN": "'|| TEMP_CTRL_MIN  || '",'|| +
+    ' "TEMP_CTRL_MAX": "'|| TEMP_CTRL_MAX  || '",'|| +
+    ' "SPECIAL_INSTRUCTION": "'|| SPECIAL_INSTRUCTION  || '",'|| +
+    ' "EXTNL_CLADDING": "'|| EXTNL_CLADDING  || '",'|| +
+    ' "CNTRL_ATM": "'|| CNTRL_ATM  || '",'|| +
+    ' "USDA": "'|| USDA  || '",'|| +
+    ' "COOLING_UNIT_MNFTR": "'|| COOLING_UNIT_MNFTR  || '",'|| +
+    ' "COOLING_UNIT_MODEL": "'|| COOLING_UNIT_MODEL  || '",'|| +
+    ' "DESHUMIDIFY": "'|| DESHUMIDIFY  || '",'|| +
+    ' "DATACORDER": "'|| DATACORDER  || '",'|| +
+    ' "OFF_HIRE_DT": "'|| OFF_HIRE_DT  || '",'|| +
+    ' "ON_HIRE_DT": "'|| ON_HIRE_DT  || '",'|| +
+    ' "BUILDDATE": "'|| BUILDDATE  || '",'|| +
+    ' "MAX_WIDTH": "'|| MAX_WIDTH  || '",'|| +
+    ' "CHANGEDATE": "'|| CHANGEDATE  || '",'|| +
+    ' "MAX_HEIGHT": "'|| MAX_HEIGHT  || +
+    '"}}','$') as JSONAttributes, TO_TIMESTAMP(T1.CHANGEDATE) as ChangedOn
+    FROM "sap.tm.trp.db.semantic.resource::v_resource_master" T1;
+    --WHERE (:res_last_update_time IS NULL OR TO_TIMESTAMP(CHANGEDATE) > ADD_SECONDS(:res_last_update_time,-1*60*60*1))
+    --AND  T1.RESOURCE_ID NOT IN (SELECT DISTINCT RESOURCE_ID FROM :RES_IDS);
+
+END;

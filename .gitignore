@@ -1,0 +1,31 @@
+# CAP trp4-cdm
+_out
+*.db
+connection.properties
+default-*.json
+gen/
+node_modules/
+target/
+
+# Web IDE, App Studio
+.che/
+.gen/
+scans/
+
+# MTA
+*_mta_build_tmp
+*.mtar
+mta_archives/
+
+# Other
+.DS_Store
+*.orig
+*.log
+package-lock.json
+
+*.iml
+*.flattened-pom.xml
+
+# IDEs
+.vscode
+.idea

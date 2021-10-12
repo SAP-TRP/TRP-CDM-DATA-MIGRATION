@@ -1,0 +1,62 @@
+{
+	"trp_cdm_object_grantor": {
+		"object_owner": { 
+			"container_roles": [
+				"sap.tm.trp.db.semantic.roles::TM94AccessSchemaAdmin#"
+			]
+		},
+		"application_user": {
+			"container_roles": [
+				"sap.tm.trp.db.semantic.roles::TM94AccessSchemaAdmin"
+			]
+		}
+	},
+	"trp_tm_object_grantor": {
+		"object_owner": { 
+			"container_roles": [
+				"sap.tm.trp.db.semantic.roles::TM94AccessSchemaAdmin#"
+			]
+		},
+		"application_user": {
+			"container_roles": [
+				"sap.tm.trp.db.semantic.roles::TM94AccessSchemaAdmin"
+			]
+		}
+	},
+	"trp4_rv_object_grantor": {
+		"object_owner": { 
+			"container_roles": [
+				"sap.tm.trp.roles::TrpRvAccessSchemaAdmin#"
+			]
+		},
+		"application_user": {
+			"container_roles": [
+				"sap.tm.trp.roles::TrpRVAccessSchemaAdmin"
+			]
+		}
+	},
+	"trp5_rv_object_grantor": {
+		"object_owner": { 
+			"container_roles": [
+				"sap.tm.trp.roles::TrpRvAccessSchemaAdmin#"
+			]
+		},
+		"application_user": {
+			"container_roles": [
+				"sap.tm.trp.roles::TrpRVAccessSchemaAdmin"
+			]
+		}
+	},
+	"trp4_tm94_tm_table_grantor": {
+		"object_owner": { 
+			"container_roles": [
+				"trp::TMSelectWithGrant#"
+			]
+		},
+		"application_user": {
+			"container_roles": [
+				"trp::TMSelect"
+			]
+		}
+	}
+}

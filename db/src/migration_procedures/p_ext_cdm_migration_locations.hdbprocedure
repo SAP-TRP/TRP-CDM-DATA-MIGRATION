@@ -1,0 +1,101 @@
+PROCEDURE "SAP_TRP_DB_P_EXT_CDM_MIGRATION_LOCATIONS"() 
+    LANGUAGE SQLSCRIPT
+    SQL SECURITY INVOKER
+AS
+BEGIN
+
+DECLARE last_update_time TIMESTAMP;
+DECLARE tolerance VARCHAR(500);
+
+/*SELECT MAX(ChangedOn) INTO last_update_time FROM "SAP_TRP_DB_LOCATIONS";
+SELECT CASE WHEN VALUE='X' THEN 0.5 ELSE VALUE END AS tolerance INTO tolerance  --User is expected to maintain value in hrs default is 30mins
+FROM "sap.tm.trp.db.systemmanagement.customization::t_general_parameters" 
+WHERE NAME='cdm_delta_tolerance';*/
+
+    UPSERT "SAP_TRP_DB_LOCATIONS"
+    SELECT
+        loc.log_sys as SysID,
+        loc.ID AS ID,
+        loc.NAME AS Name,
+        loc.DESC AS Desc,
+        loc.LOCTYPE AS LocType,
+        loc.XPOS as Longitude,
+        loc.YPOS  as Latitude,
+        addr.CITY_CODE as CityCode,
+        addr.STATE_CODE as StateCode,
+        addr.COUNTRY_CODE as CountryCode,
+        addr.POSTAL_CODE as PostalCode,
+		'' ChangedOn
+    FROM "sap.tm.trp.db.semantic.location::v_all_location" loc inner join 
+	"sap.tm.trp.db.semantic.location::v_address" addr on loc.address_id=addr.id and loc.log_sys=addr.log_sys;
+
+--SELECT MAX(ChangedOn) INTO last_update_time FROM "sap_trp_db_zones";
+
+    UPSERT "SAP_TRP_DB_ZONES"
+    SELECT
+        log_sys as SysID,
+        ID,
+        NAME as Name,
+        DESC as Desc,
+        CREATED_BY as CreatedBy,
+        CREATED_TIME as CreatedOn,
+        MODIFIED_BY as ChangedBy,
+        MODIFIED_TIME as ChangedOn
+    FROM "sap.tm.trp.db.semantic.location::v_all_zone";
+    --where (:last_update_time IS NULL OR TO_TIMESTAMP(MODIFIED_TIME) > ADD_SECONDS(:last_update_time,-1*60*60*:tolerance));
+
+--SELECT MAX(ChangedOn) INTO last_update_time FROM "sap_trp_db_zonelocations";
+
+    UPSERT "SAP_TRP_DB_ZONELOCATIONS"
+    SELECT
+        zones.log_sys as SysID,
+        zoneLoc.ZONE_ID as ZoneID,
+        zoneLoc.LOCATION_ID as LocationID
+    FROM "sap.tm.trp.db.semantic.location::v_zone_location" AS zoneLoc
+    INNER JOIN "sap.tm.trp.db.semantic.location::v_all_zone" AS zones on (zones.ID = zoneLoc.ZONE_ID and zoneLoc.log_sys=zones.log_sys);
+    --where (:last_update_time IS NULL OR TO_TIMESTAMP(zones.MODIFIED_TIME) > ADD_SECONDS(:last_update_time,-1*60*60*:tolerance));
+
+--SELECT MAX(ChangedOn) INTO last_update_time FROM "sap_trp_db_zonepostalcodes";
+
+    UPSERT "SAP_TRP_DB_ZONEPOSTALCODES"
+    SELECT
+        zones.log_sys as SysID,
+        zonePostal.ZONE_ID as ZoneID,
+        zonePostal.COUNTER as Counter,
+        zonePostal.COUNTRY_CODE as CountryCode,
+        zonePostal.POSTAL_CODE_FROM as PostalCodeFrom,
+        zonePostal.POSTAL_CODE_TO as PostalCodeTo
+    FROM "sap.tm.trp.db.semantic.location::v_zone_postal_gis" AS zonePostal
+    INNER JOIN "sap.tm.trp.db.semantic.location::v_all_zone" AS zones on (zones.ID = zonePostal.ZONE_ID and zonePostal.log_sys=zones.log_sys);
+    --where (:last_update_time IS NULL OR TO_TIMESTAMP(zones.MODIFIED_TIME) > ADD_SECONDS(:last_update_time,-1*60*60*:tolerance));
+
+--SELECT MAX(ChangedOn) INTO last_update_time FROM "sap_trp_db_zonestates";
+
+    UPSERT "SAP_TRP_DB_ZONESTATES"
+    SELECT
+        zones.log_sys as SysID,
+        zoneState.ZONE_ID as ZoneID,
+        zoneState.COUNTER as Counter,
+        zoneState.STATE_CODE as StateCode
+    FROM "sap.tm.trp.db.semantic.location::v_zone_admin_gis" AS zoneState
+    INNER JOIN "sap.tm.trp.db.semantic.location::v_all_zone" AS zones on (zones.ID = zoneState.ZONE_ID and zoneState.log_sys=zones.log_sys);
+    --where (:last_update_time IS NULL OR TO_TIMESTAMP(zones.MODIFIED_TIME) > ADD_SECONDS(:last_update_time,-1*60*60*:tolerance));
+
+
+    UPSERT "SAP_TRP_DB_HIERARCHIES"
+    SELECT
+        log_sys as SysID,
+        ID as HierarchyID,
+        DESC as Desc
+    FROM "sap.tm.trp.db.semantic.location::v_zone_hierarchy";
+
+    UPSERT "SAP_TRP_DB_HIERARCHYITEMS"
+    SELECT
+        log_sys as SysID,
+        ZONE_HIERARCHY_ID as HierarchyID,
+        ZONE_ID as ZoneID,
+        PARENT_ZONE_ID as ParentZoneID,
+        LEVEL as Level
+    FROM "sap.tm.trp.db.semantic.location::v_hierarchy_item";
+
+END;

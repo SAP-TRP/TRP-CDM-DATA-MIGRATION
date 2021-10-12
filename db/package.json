@@ -1,0 +1,13 @@
+{
+  "name": "trp-cdm-migration-db",
+  "dependencies": {
+    "@sap/hdi-deploy": "3.11.11"
+  },
+  "engines": {
+    "node": "^10 || ^12"
+  },
+  "scripts": {
+    "start": "node node_modules/@sap/hdi-deploy/deploy.js",
+    "postinstall": "npm dedupe && node .build.js"
+  }
+}
