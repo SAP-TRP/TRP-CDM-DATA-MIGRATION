@@ -1,13 +1,13 @@
-FUNCTION UDF_UUID()
-RETURNS RESULT NVARCHAR(36)
+FUNCTION udf_uuid()
+RETURNS result NVARCHAR(36)
 LANGUAGE SQLSCRIPT
 SQL SECURITY INVOKER AS
 BEGIN
-	DECLARE ID VARBINARY(16);
-	ID = TO_NVARCHAR(NEWUID());
-	RESULT = 		  LOWER(SUBSTRING(ID, 1, 4)) 
-			|| '-' || LOWER(SUBSTRING(ID, 5, 2))
-	    	|| '-' || LOWER(SUBSTRING(ID, 7, 2))
-	    	|| '-' || LOWER(SUBSTRING(ID, 9, 2))
-	    	|| '-' || LOWER(SUBSTRING(ID, 11, 6));
+	DECLARE id varbinary(16);
+	id = to_nvarchar(newuid());
+	result = 		  lower(substring(id, 1, 4))
+			|| '-' || lower(substring(id, 5, 2))
+	    	|| '-' || lower(substring(id, 7, 2))
+	    	|| '-' || lower(substring(id, 9, 2))
+	    	|| '-' || lower(substring(id, 11, 6));
 END

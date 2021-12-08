@@ -16,6 +16,7 @@ scans/
 *_mta_build_tmp
 *.mtar
 mta_archives/
+mta-op-*
 
 # Other
 .DS_Store

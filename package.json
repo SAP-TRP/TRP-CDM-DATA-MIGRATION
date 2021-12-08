@@ -1,5 +1,5 @@
 {
-  "name": "trp-cdm-data-migration-mit",
+  "name": "trp-cdm-data-migration",
   "version": "1.0.0",
   "description": "TRP CDM Data Migration",
   "dependencies": {
@@ -12,6 +12,6 @@
   "scripts": {
     "build-MTA": "mbt build -p xsa",
     "build": "node node_modules/@sap/cds/bin/cds.js build",
-    "deploy-dev": "xs t -s MIT5 && xs deploy .\\mta_archives\\SAP_TRP_CDM_DATA_MIGRATION_MIT_1.0.0.mtar -e .\\SAP_TRP_CDM.mtaext"
+    "deploy-dev": "xs t -s DEV5 && xs deploy .\\mta_archives\\SAP_TRP_CDM_DATA_MIGRATION_1.0.0.mtar -e .\\SAP_TRP_CDM.mtaext"
   }
 }

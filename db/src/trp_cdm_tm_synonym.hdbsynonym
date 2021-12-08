@@ -159,6 +159,7 @@
     "sap.tm.trp.db.semantic::/SCMB/TOENTITY": {},
     "sap.tm.trp.db.semantic::/SCMTMS/D_SCHDPL": {},
     "sap.tm.trp.db.semantic::/SCMTMS/D_TRQROT": {},
+    "sap.tm.trp.db.semantic::/SCMTMS/D_TRQITM": {},
     "sap.tm.trp.db.semantic.order::v_customer_order_item": {},
     "sap.tm.trp.db.semantic::/SCMTMS/D_TORITE": {},
     "sap.tm.trp.db.semantic::/SCMTMS/D_TORSTS": {},
@@ -222,5 +223,10 @@
     "SAP_TRP_DB_MDM_ASSIGNEDRULES": {},
     "SAP_TRP_DB_MDM_ATTRIBUTEFILTERS": {},
     "SAP_TRP_DB_MDM_ATTRIBUTEFILTERITEMS": {},
-    "SAP_TRP_DB_MDM_ATTRIBUTEFILTERITEMVALUES": {}
+    "SAP_TRP_DB_MDM_ATTRIBUTEFILTERITEMVALUES": {},
+    "SAP_TRP_DB_MDM_CUSTOMERCONFIG": {},
+    "SAP_TRP_DB_MDM_SYSTEMCONNECTIONSETTINGS":{},
+    "SAP_TRP_DB_MDM_RESOURCESETTINGS":{},
+    "SAP_TRP_DB_MDM_ATTRIBUTES":{},
+    "sap.tm.trp.db.filter::t_attribute_group_attribute":{}
 }

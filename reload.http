@@ -1,1 +1,4 @@
 GET http://localhost:4000/scheduleCDMJob
+
+###
+GET http://localhost:4000/scheduleMDMJob

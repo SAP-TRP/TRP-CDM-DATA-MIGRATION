@@ -1,101 +1,101 @@
-PROCEDURE "SAP_TRP_DB_P_EXT_CDM_MIGRATION_LOCATIONS"() 
+PROCEDURE "sap_trp_db_p_ext_cdm_migration_locations"()
     LANGUAGE SQLSCRIPT
     SQL SECURITY INVOKER
 AS
 BEGIN
 
-DECLARE last_update_time TIMESTAMP;
+DECLARE last_update_time timestamp;
 DECLARE tolerance VARCHAR(500);
 
 /*SELECT MAX(ChangedOn) INTO last_update_time FROM "SAP_TRP_DB_LOCATIONS";
 SELECT CASE WHEN VALUE='X' THEN 0.5 ELSE VALUE END AS tolerance INTO tolerance  --User is expected to maintain value in hrs default is 30mins
-FROM "sap.tm.trp.db.systemmanagement.customization::t_general_parameters" 
+FROM "sap.tm.trp.db.systemmanagement.customization::t_general_parameters"
 WHERE NAME='cdm_delta_tolerance';*/
 
-    UPSERT "SAP_TRP_DB_LOCATIONS"
+    upsert "SAP_TRP_DB_LOCATIONS"
     SELECT
-        loc.log_sys as SysID,
-        loc.ID AS ID,
-        loc.NAME AS Name,
-        loc.DESC AS Desc,
-        loc.LOCTYPE AS LocType,
-        loc.XPOS as Longitude,
-        loc.YPOS  as Latitude,
-        addr.CITY_CODE as CityCode,
-        addr.STATE_CODE as StateCode,
-        addr.COUNTRY_CODE as CountryCode,
-        addr.POSTAL_CODE as PostalCode,
-		'' ChangedOn
-    FROM "sap.tm.trp.db.semantic.location::v_all_location" loc inner join 
-	"sap.tm.trp.db.semantic.location::v_address" addr on loc.address_id=addr.id and loc.log_sys=addr.log_sys;
+        loc.log_sys AS sysid,
+        loc.id AS id,
+        loc.name AS name,
+        loc.desc AS DESC,
+        loc.loctype AS loctype,
+        loc.xpos AS longitude,
+        loc.ypos  AS latitude,
+        addr.city_code AS citycode,
+        addr.state_code AS statecode,
+        addr.country_code AS countrycode,
+        addr.postal_code AS postalcode,
+		'' changedon
+    FROM "sap.tm.trp.db.semantic.location::v_all_location" loc INNER JOIN
+	"sap.tm.trp.db.semantic.location::v_address" addr ON loc.address_id=addr.id AND loc.log_sys=addr.log_sys;
 
 --SELECT MAX(ChangedOn) INTO last_update_time FROM "sap_trp_db_zones";
 
-    UPSERT "SAP_TRP_DB_ZONES"
+    upsert "SAP_TRP_DB_ZONES"
     SELECT
-        log_sys as SysID,
-        ID,
-        NAME as Name,
-        DESC as Desc,
-        CREATED_BY as CreatedBy,
-        CREATED_TIME as CreatedOn,
-        MODIFIED_BY as ChangedBy,
-        MODIFIED_TIME as ChangedOn
+        log_sys AS sysid,
+        id,
+        name AS name,
+        DESC AS DESC,
+        created_by AS createdby,
+        created_time AS createdon,
+        modified_by AS changedby,
+        modified_time AS changedon
     FROM "sap.tm.trp.db.semantic.location::v_all_zone";
     --where (:last_update_time IS NULL OR TO_TIMESTAMP(MODIFIED_TIME) > ADD_SECONDS(:last_update_time,-1*60*60*:tolerance));
 
 --SELECT MAX(ChangedOn) INTO last_update_time FROM "sap_trp_db_zonelocations";
 
-    UPSERT "SAP_TRP_DB_ZONELOCATIONS"
+    upsert "SAP_TRP_DB_ZONELOCATIONS"
     SELECT
-        zones.log_sys as SysID,
-        zoneLoc.ZONE_ID as ZoneID,
-        zoneLoc.LOCATION_ID as LocationID
-    FROM "sap.tm.trp.db.semantic.location::v_zone_location" AS zoneLoc
-    INNER JOIN "sap.tm.trp.db.semantic.location::v_all_zone" AS zones on (zones.ID = zoneLoc.ZONE_ID and zoneLoc.log_sys=zones.log_sys);
+        zones.log_sys AS sysid,
+        zoneloc.zone_id AS zoneid,
+        zoneloc.location_id AS locationid
+    FROM "sap.tm.trp.db.semantic.location::v_zone_location" AS zoneloc
+    INNER JOIN "sap.tm.trp.db.semantic.location::v_all_zone" AS zones ON (zones.id = zoneloc.zone_id AND zoneloc.log_sys=zones.log_sys);
     --where (:last_update_time IS NULL OR TO_TIMESTAMP(zones.MODIFIED_TIME) > ADD_SECONDS(:last_update_time,-1*60*60*:tolerance));
 
 --SELECT MAX(ChangedOn) INTO last_update_time FROM "sap_trp_db_zonepostalcodes";
 
-    UPSERT "SAP_TRP_DB_ZONEPOSTALCODES"
+    upsert "SAP_TRP_DB_ZONEPOSTALCODES"
     SELECT
-        zones.log_sys as SysID,
-        zonePostal.ZONE_ID as ZoneID,
-        zonePostal.COUNTER as Counter,
-        zonePostal.COUNTRY_CODE as CountryCode,
-        zonePostal.POSTAL_CODE_FROM as PostalCodeFrom,
-        zonePostal.POSTAL_CODE_TO as PostalCodeTo
-    FROM "sap.tm.trp.db.semantic.location::v_zone_postal_gis" AS zonePostal
-    INNER JOIN "sap.tm.trp.db.semantic.location::v_all_zone" AS zones on (zones.ID = zonePostal.ZONE_ID and zonePostal.log_sys=zones.log_sys);
+        zones.log_sys AS sysid,
+        zonepostal.zone_id AS zoneid,
+        zonepostal.counter AS counter,
+        zonepostal.country_code AS countrycode,
+        zonepostal.postal_code_from AS postalcodefrom,
+        zonepostal.postal_code_to AS postalcodeto
+    FROM "sap.tm.trp.db.semantic.location::v_zone_postal_gis" AS zonepostal
+    INNER JOIN "sap.tm.trp.db.semantic.location::v_all_zone" AS zones ON (zones.id = zonepostal.zone_id AND zonepostal.log_sys=zones.log_sys);
     --where (:last_update_time IS NULL OR TO_TIMESTAMP(zones.MODIFIED_TIME) > ADD_SECONDS(:last_update_time,-1*60*60*:tolerance));
 
 --SELECT MAX(ChangedOn) INTO last_update_time FROM "sap_trp_db_zonestates";
 
-    UPSERT "SAP_TRP_DB_ZONESTATES"
+    upsert "SAP_TRP_DB_ZONESTATES"
     SELECT
-        zones.log_sys as SysID,
-        zoneState.ZONE_ID as ZoneID,
-        zoneState.COUNTER as Counter,
-        zoneState.STATE_CODE as StateCode
-    FROM "sap.tm.trp.db.semantic.location::v_zone_admin_gis" AS zoneState
-    INNER JOIN "sap.tm.trp.db.semantic.location::v_all_zone" AS zones on (zones.ID = zoneState.ZONE_ID and zoneState.log_sys=zones.log_sys);
+        zones.log_sys AS sysid,
+        zonestate.zone_id AS zoneid,
+        zonestate.counter AS counter,
+        zonestate.state_code AS statecode
+    FROM "sap.tm.trp.db.semantic.location::v_zone_admin_gis" AS zonestate
+    INNER JOIN "sap.tm.trp.db.semantic.location::v_all_zone" AS zones ON (zones.id = zonestate.zone_id AND zonestate.log_sys=zones.log_sys);
     --where (:last_update_time IS NULL OR TO_TIMESTAMP(zones.MODIFIED_TIME) > ADD_SECONDS(:last_update_time,-1*60*60*:tolerance));
 
 
-    UPSERT "SAP_TRP_DB_HIERARCHIES"
+    upsert "SAP_TRP_DB_HIERARCHIES"
     SELECT
-        log_sys as SysID,
-        ID as HierarchyID,
-        DESC as Desc
+        log_sys AS sysid,
+        id AS hierarchyid,
+        DESC AS DESC
     FROM "sap.tm.trp.db.semantic.location::v_zone_hierarchy";
 
-    UPSERT "SAP_TRP_DB_HIERARCHYITEMS"
+    upsert "SAP_TRP_DB_HIERARCHYITEMS"
     SELECT
-        log_sys as SysID,
-        ZONE_HIERARCHY_ID as HierarchyID,
-        ZONE_ID as ZoneID,
-        PARENT_ZONE_ID as ParentZoneID,
-        LEVEL as Level
+        log_sys AS sysid,
+        zone_hierarchy_id AS hierarchyid,
+        zone_id AS zoneid,
+        parent_zone_id AS parentzoneid,
+        level AS level
     FROM "sap.tm.trp.db.semantic.location::v_hierarchy_item";
 
 END;

@@ -965,6 +965,12 @@
             "object": "/SCMTMS/D_TRQROT"
         }
     },
+    "sap.tm.trp.db.semantic::/SCMTMS/D_TRQITM": {
+        "target": {
+            "schema.configure": "trp4_tm94_tm_table_grantor/schema",
+            "object": "/SCMTMS/D_TRQITM"
+        }
+    },
     "sap.tm.trp.db.semantic.order::v_customer_order_item": {
         "target": {
             "schema.configure": "trp_tm_object_grantor/schema",
@@ -1036,7 +1042,7 @@
             "schema.configure": "trp_tm_object_grantor/schema",
             "object": "sap.tm.trp.db.semantic.common::t_resource_category_set"
         }
-    },    
+    },
     "sap.tm.trp.db.semantic.resource::v_resource_category": {
         "target": {
             "schema.configure": "trp_tm_object_grantor/schema",
@@ -1084,7 +1090,7 @@
             "schema.configure": "trp4_rv_object_grantor/schema",
             "object": "sap.tm.trp.db.filter::t_location_filter_region"
         }
-    },        
+    },
     "sap.tm.trp.db.systemmanagement::t_location_group": {
         "target": {
             "schema.configure": "trp4_rv_object_grantor/schema",
@@ -1096,7 +1102,7 @@
             "schema.configure": "trp4_rv_object_grantor/schema",
             "object": "sap.tm.trp.db.systemmanagement::t_location_group_item"
         }
-    },    
+    },
     "sap.tm.trp.db.systemmanagement::t_region_group": {
         "target": {
             "schema.configure": "trp4_rv_object_grantor/schema",
@@ -1108,7 +1114,7 @@
             "schema.configure": "trp4_rv_object_grantor/schema",
             "object": "sap.tm.trp.db.systemmanagement::t_region_group_item"
         }
-    },    
+    },
     "sap.tm.trp.db.systemmanagement::t_equipment_group": {
         "target": {
             "schema.configure": "trp4_rv_object_grantor/schema",
@@ -1132,7 +1138,7 @@
             "schema.configure": "trp4_rv_object_grantor/schema",
             "object": "sap.tm.trp.db.filter::t_equipment_filter_equipment"
         }
-    },    
+    },
     "sap.tm.trp.db.leasecontract::t_lease_contract_type": {
         "target": {
             "schema.configure": "trp4_rv_object_grantor/schema",
@@ -1168,7 +1174,7 @@
             "schema.configure": "trp4_rv_object_grantor/schema",
             "object": "sap.tm.trp.db.leasecontract::t_lease_contract_per_diem"
         }
-    },    
+    },
     "sap.tm.trp.db.stock::t_stock_config": {
         "target": {
             "schema.configure": "trp4_rv_object_grantor/schema",
@@ -1341,6 +1347,36 @@
         "target": {
             "schema.configure": "trp5_rv_object_grantor/schema",
             "object": "SAP_TRP_DB_MDM_ATTRIBUTEFILTERITEMVALUES"
+        }
+    },
+    "SAP_TRP_DB_MDM_CUSTOMERCONFIG": {
+        "target": {
+            "schema.configure": "trp5_rv_object_grantor/schema",
+            "object": "SAP_TRP_DB_MDM_CUSTOMERCONFIG"
+        }
+    },
+    "SAP_TRP_DB_MDM_SYSTEMCONNECTIONSETTINGS":{
+        "target": {
+            "schema.configure": "trp5_rv_object_grantor/schema",
+            "object": "SAP_TRP_DB_MDM_SYSTEMCONNECTIONSETTINGS"
+        }
+    },
+    "SAP_TRP_DB_MDM_RESOURCESETTINGS":{
+        "target": {
+            "schema.configure": "trp5_rv_object_grantor/schema",
+            "object": "SAP_TRP_DB_MDM_RESOURCESETTINGS"
+        }
+    },
+    "SAP_TRP_DB_MDM_ATTRIBUTES":{
+        "target": {
+            "schema.configure": "trp5_rv_object_grantor/schema",
+            "object": "SAP_TRP_DB_MDM_ATTRIBUTES"
+        }
+    },
+    "sap.tm.trp.db.filter::t_attribute_group_attribute":{
+        "target": {
+            "schema.configure": "trp4_rv_object_grantor/schema",
+            "object": "sap.tm.trp.db.filter::t_attribute_group_attribute"
         }
     }
 }
