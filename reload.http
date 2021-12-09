@@ -1,4 +1,15 @@
 GET http://localhost:4000/scheduleCDMJob
+####
+GET http://localhost:4000/scheduleMDMJob
 
 ###
-GET http://localhost:4000/scheduleMDMJob
+GET http://localhost:4000/LocationsCDMJob
+
+###
+GET http://localhost:4000/CommonsCDMJob
+
+####
+GET http://localhost:4000/OrdersCDMJob
+
+###
+GET http://localhost:4000/ResourcesCDMJob

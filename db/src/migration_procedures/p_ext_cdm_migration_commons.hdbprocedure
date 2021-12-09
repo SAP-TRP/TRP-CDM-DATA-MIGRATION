@@ -1,306 +1,306 @@
-PROCEDURE "sap_trp_db_p_ext_cdm_migration_commons"()
+PROCEDURE "SAP_TRP_DB_P_EXT_CDM_MIGRATION_COMMONS"() 
     LANGUAGE SQLSCRIPT
     SQL SECURITY INVOKER
 AS
 BEGIN
 
 -- Texts
-DECLARE domainname VARCHAR(22);
-
-    text_data =
+DECLARE DomainName VARCHAR(22);
+    
+    Text_data =
     --CITY
     SELECT
-        log_sys AS sysid,
-        'City' AS domainname,
-        city_code AS domainvaluecode,
-        langu AS languagecode,
-        city_name AS description
-    FROM "sap.tm.trp.db.semantic::adrcityt" UNION ALL
+        log_sys as SysID,
+        'City' as DomainName,
+        CITY_CODE as DomainValueCode,
+        LANGU as LanguageCode,
+        CITY_NAME as Description
+    FROM "sap.tm.trp.db.semantic::ADRCITYT" UNION ALL
     --COUNTRY
     SELECT
-        log_sys AS sysid,
-        'Country' AS domainname,
-        land1 AS domainvaluecode,
-        spras AS languagecode,
-        landx AS description
-    FROM "sap.tm.trp.db.semantic::t005t" UNION ALL
+        log_sys as SysID,
+        'Country' as DomainName,
+        LAND1 as DomainValueCode,
+        SPRAS as LanguageCode,
+        LANDX as Description
+    FROM "sap.tm.trp.db.semantic::T005T" UNION ALL
     --STATE
     SELECT
-        log_sys AS sysid,
-        'State' AS domainname,
-        bland AS domainvaluecode,
-        spras AS languagecode,
-        bezei AS description
-    FROM "sap.tm.trp.db.semantic::t005u" UNION ALL
-    --BLOCK STATUS
+        log_sys as SysID,
+        'State' as DomainName,
+        BLAND as DomainValueCode,
+        SPRAS as LanguageCode,
+        BEZEI as Description
+    FROM "sap.tm.trp.db.semantic::T005U" UNION ALL
+    --BLOCK STATUS 
     SELECT
-        log_sys AS sysid,
-        'BlockStatus' AS domainname,
-        trp_pb_status AS domainvaluecode,
-        spras AS languagecode,
-        description AS description
-    FROM "sap.tm.trp.db.semantic::/trp/res_statust" UNION ALL
+        log_sys as SysID,
+        'BlockStatus' as DomainName,
+        TRP_PB_STATUS as DomainValueCode,
+        SPRAS as LanguageCode,
+        DESCRIPTION as Description 
+    FROM "sap.tm.trp.db.semantic::/TRP/RES_STATUST" UNION ALL
     --Cargo Loading Status
     SELECT
-        log_sys AS sysid,
-        'CargoLoadingStatus' AS domainname,
-        domvalue_l AS domainvaluecode,
-        ddlanguage AS languagecode,
-        ddtext AS description
-    FROM "sap.tm.trp.db.semantic::dd07t" WHERE domname = '/trp/dm_res_cgdsts' UNION ALL
+        log_sys as SysID,
+        'CargoLoadingStatus' as DomainName,
+        DOMVALUE_L as DomainValueCode,
+        DDLANGUAGE as LanguageCode,
+        DDTEXT as Description 
+    FROM "sap.tm.trp.db.semantic::DD07T" WHERE DOMNAME = '/TRP/DM_RES_CGDSTS' UNION ALL
     --Flower Bulb Arrangement
     SELECT
-        log_sys AS sysid,
-        'FlowerBulbArgument' AS domainname,
-        domvalue_l AS domainvaluecode,
-        ddlanguage AS languagecode,
-        ddtext AS description
-    FROM "sap.tm.trp.db.semantic::dd07t" WHERE domname = '/trp/flower_bulb_agrmnt' UNION ALL
+        log_sys as SysID,
+        'FlowerBulbArgument' as DomainName,
+        DOMVALUE_L as DomainValueCode,
+        DDLANGUAGE as LanguageCode,
+        DDTEXT as Description 
+    FROM "sap.tm.trp.db.semantic::DD07T" WHERE DOMNAME = '/TRP/FLOWER_BULB_AGRMNT' UNION ALL
     --Food Grade
     SELECT
-        log_sys AS sysid,
-        'FoodGrade' AS domainname,
-        domvalue_l AS domainvaluecode,
-        ddlanguage AS languagecode,
-        ddtext AS description
-    FROM "sap.tm.trp.db.semantic::dd07t" WHERE domname = 'XFELD' UNION ALL
+        log_sys as SysID,
+        'FoodGrade' as DomainName,
+        DOMVALUE_L as DomainValueCode,
+        DDLANGUAGE as LanguageCode,
+        DDTEXT as Description 
+    FROM "sap.tm.trp.db.semantic::DD07T" WHERE DOMNAME = 'XFELD' UNION ALL
     --Movement Status
     SELECT
-        log_sys AS sysid,
-        'MovementStatus' AS domainname,
-        domvalue_l AS domainvaluecode,
-        ddlanguage AS languagecode,
-        ddtext AS description
-    FROM "sap.tm.trp.db.semantic::dd07t" WHERE domname = '/trp/dm_res_mvtsts' UNION ALL
+        log_sys as SysID,
+        'MovementStatus' as DomainName,
+        DOMVALUE_L as DomainValueCode,
+        DDLANGUAGE as LanguageCode,
+        DDTEXT as Description 
+    FROM "sap.tm.trp.db.semantic::DD07T" WHERE DOMNAME = '/TRP/DM_RES_MVTSTS' UNION ALL
     --Ownership Code
     SELECT
-        log_sys AS sysid,
-        'OwnershipCode' AS domainname,
-        domvalue_l AS domainvaluecode,
-        ddlanguage AS languagecode,
-        ddtext AS description
-    FROM "sap.tm.trp.db.semantic::dd07t" WHERE domname = '/scmb/ownership_code' UNION ALL
+        log_sys as SysID,
+        'OwnershipCode' as DomainName,
+        DOMVALUE_L as DomainValueCode,
+        DDLANGUAGE as LanguageCode,
+        DDTEXT as Description 
+    FROM "sap.tm.trp.db.semantic::DD07T" WHERE DOMNAME = '/SCMB/OWNERSHIP_CODE' UNION ALL
     --Resource Class
     SELECT
-        log_sys AS sysid,
-        'ResourceClass' AS domainname,
-        res_class AS domainvaluecode,
-        spras AS languagecode,
-        description AS description
-    FROM "sap.tm.trp.db.semantic::/scmb/c_resclst" UNION ALL
+        log_sys as SysID,
+        'ResourceClass' as DomainName,
+        RES_CLASS as DomainValueCode,
+        SPRAS as LanguageCode,
+        DESCRIPTION as Description 
+    FROM "sap.tm.trp.db.semantic::/SCMB/C_RESCLST" UNION ALL
     --Resource Condition
     SELECT
-        log_sys AS sysid,
-        'ResourceCondition' AS domainname,
-        res_cond AS domainvaluecode,
-        spras AS languagecode,
-        descr AS description
-    FROM "sap.tm.trp.db.semantic::/scmb/c_rescondt" UNION ALL
+        log_sys as SysID,
+        'ResourceCondition' as DomainName,
+        RES_COND as DomainValueCode,
+        SPRAS as LanguageCode,
+        DESCR as Description 
+    FROM "sap.tm.trp.db.semantic::/SCMB/C_RESCONDT" UNION ALL
     --Resource Group Detail
     SELECT
-        log_sys AS sysid,
-        'ResourceGroupDetail' AS domainname,
-        equi_type AS domainvaluecode,
-        spras AS languagecode,
-        descr AS description
-    FROM "sap.tm.trp.db.semantic::/scmb/equi_typet" UNION ALL
+        log_sys as SysID,
+        'ResourceGroupDetail' as DomainName,
+        EQUI_TYPE as DomainValueCode,
+        SPRAS as LanguageCode,
+        DESCR as Description 
+    FROM "sap.tm.trp.db.semantic::/SCMB/EQUI_TYPET" UNION ALL
     --Resource Group Type
     SELECT
-        log_sys AS sysid,
-        'ResourceGroupType' AS domainname,
-        domvalue_l AS domainvaluecode,
-        ddlanguage AS languagecode,
-        ddtext AS description
-    FROM "sap.tm.trp.db.semantic::dd07t" WHERE domname = '/scmb/tmsrestype' UNION ALL
+        log_sys as SysID,
+        'ResourceGroupType' as DomainName,
+        DOMVALUE_L as DomainValueCode,
+        DDLANGUAGE as LanguageCode,
+        DDTEXT as Description 
+    FROM "sap.tm.trp.db.semantic::DD07T" WHERE DOMNAME = '/SCMB/TMSRESTYPE' UNION ALL
     --Shipper Owned Same as Fod Grade??
     SELECT
-        log_sys AS sysid,
-        'ShipperOwned' AS domainname,
-        domvalue_l AS domainvaluecode,
-        ddlanguage AS languagecode,
-        ddtext AS description
-    FROM "sap.tm.trp.db.semantic::dd07t" WHERE domname = 'XFELD' UNION ALL
+        log_sys as SysID,
+        'ShipperOwned' as DomainName,
+        DOMVALUE_L as DomainValueCode,
+        DDLANGUAGE as LanguageCode,
+        DDTEXT as Description 
+    FROM "sap.tm.trp.db.semantic::DD07T" WHERE DOMNAME = 'XFELD' UNION ALL
     --Special Instruction
     SELECT
-        log_sys AS sysid,
-        'SpecialInstructions' AS domainname,
-        spec_instr AS domainvaluecode,
-        spras AS languagecode,
-        descr AS description
-    FROM "sap.tm.trp.db.semantic::/scmb/c_spinstrt" UNION ALL
+        log_sys as SysID,
+        'SpecialInstructions' as DomainName,
+        SPEC_INSTR as DomainValueCode,
+        SPRAS as LanguageCode,
+        DESCR as Description 
+    FROM "sap.tm.trp.db.semantic::/SCMB/C_SPINSTRT" UNION ALL
     --Temp Control same as food grade??
     SELECT
-        log_sys AS sysid,
-        'TempratureControl' AS domainname,
-        domvalue_l AS domainvaluecode,
-        ddlanguage AS languagecode,
-        ddtext AS description
-    FROM "sap.tm.trp.db.semantic::dd07t" WHERE domname = 'XFELD' UNION ALL
+        log_sys as SysID,
+        'TempratureControl' as DomainName,
+        DOMVALUE_L as DomainValueCode,
+        DDLANGUAGE as LanguageCode,
+        DDTEXT as Description 
+    FROM "sap.tm.trp.db.semantic::DD07T" WHERE DOMNAME = 'XFELD' UNION ALL
     --USDA
     SELECT
-        log_sys AS sysid,
-        'USDA' AS domainname,
-        domvalue_l AS domainvaluecode,
-        ddlanguage AS languagecode,
-        ddtext AS description
-    FROM "sap.tm.trp.db.semantic::dd07t" WHERE domname = 'USDA' UNION ALL
+        log_sys as SysID,
+        'USDA' as DomainName,
+        DOMVALUE_L as DomainValueCode,
+        DDLANGUAGE as LanguageCode,
+        DDTEXT as Description 
+    FROM "sap.tm.trp.db.semantic::DD07T" WHERE DOMNAME = 'USDA' UNION ALL
     --Ventilated
     SELECT
-        log_sys AS sysid,
-        'Ventilated' AS domainname,
-        domvalue_l AS domainvaluecode,
-        ddlanguage AS languagecode,
-        ddtext AS description
-    FROM "sap.tm.trp.db.semantic::dd07t" WHERE domname = '/scmb/ventilated' UNION ALL
+        log_sys as SysID,
+        'Ventilated' as DomainName,
+        DOMVALUE_L as DomainValueCode,
+        DDLANGUAGE as LanguageCode,
+        DDTEXT as Description 
+    FROM "sap.tm.trp.db.semantic::DD07T" WHERE DOMNAME = '/SCMB/VENTILATED' UNION ALL
     --Build TU
     SELECT
-        log_sys AS sysid,
-        'BuildTU' AS domainname,
-        domvalue_l AS domainvaluecode,
-        ddlanguage AS languagecode,
-        ddtext AS description
-    FROM "sap.tm.trp.db.semantic::dd07t" WHERE domname = 'XFIELD' UNION ALL
+        log_sys as SysID,
+        'BuildTU' as DomainName,
+        DOMVALUE_L as DomainValueCode,
+        DDLANGUAGE as LanguageCode,
+        DDTEXT as Description 
+    FROM "sap.tm.trp.db.semantic::DD07T" WHERE DOMNAME = 'XFIELD' UNION ALL
     --Movement Type
     SELECT
-        log_sys AS sysid,
-        'MovementType' AS domainname,
-        movem_type AS domainvaluecode,
-        langu AS languagecode,
-        description_s AS description
-    FROM "sap.tm.trp.db.semantic::/scmtms/c_mvmtyt" UNION ALL
+        log_sys as SysID,
+        'MovementType' as DomainName,
+        MOVEM_TYPE as DomainValueCode,
+        LANGU as LanguageCode,
+        DESCRIPTION_S as Description 
+    FROM "sap.tm.trp.db.semantic::/SCMTMS/C_MVMTYT" UNION ALL
     --Execution Status
     SELECT
-        log_sys AS sysid,
-        'ExecutionStatus' AS domainname,
-        domvalue_l AS domainvaluecode,
-        ddlanguage AS languagecode,
-        ddtext AS description
-    FROM "sap.tm.trp.db.semantic::dd07t" WHERE domname = '/scmtms/tor_execution_status' UNION ALL
+        log_sys as SysID,
+        'ExecutionStatus' as DomainName,
+        DOMVALUE_L as DomainValueCode,
+        DDLANGUAGE as LanguageCode,
+        DDTEXT as Description 
+    FROM "sap.tm.trp.db.semantic::DD07T" WHERE DOMNAME = '/SCMTMS/TOR_EXECUTION_STATUS' UNION ALL
     --Lifecycle Status
     SELECT
-        log_sys AS sysid,
-        'LifecycleStatus' AS domainname,
-        domvalue_l AS domainvaluecode,
-        ddlanguage AS languagecode,
-        ddtext AS description
-    FROM "sap.tm.trp.db.semantic::dd07t" WHERE domname = '/scmtms/tor_lc_status' UNION ALL
+        log_sys as SysID,
+        'LifecycleStatus' as DomainName,
+        DOMVALUE_L as DomainValueCode,
+        DDLANGUAGE as LanguageCode,
+        DDTEXT as Description 
+    FROM "sap.tm.trp.db.semantic::DD07T" WHERE DOMNAME = '/SCMTMS/TOR_LC_STATUS' UNION ALL
     --Movement Category
     SELECT
-        log_sys AS sysid,
-        'MovementCategory' AS domainname,
-        domvalue_l AS domainvaluecode,
-        ddlanguage AS languagecode,
-        ddtext AS description
-    FROM "sap.tm.trp.db.semantic::dd07t" WHERE domname = '/scmtms/tor_movement_category' UNION ALL
+        log_sys as SysID,
+        'MovementCategory' as DomainName,
+        DOMVALUE_L as DomainValueCode,
+        DDLANGUAGE as LanguageCode,
+        DDTEXT as Description
+    FROM "sap.tm.trp.db.semantic::DD07T" WHERE DOMNAME = '/SCMTMS/TOR_MOVEMENT_CATEGORY' UNION ALL
     --Transportation Mode Category
     SELECT
-        log_sys AS sysid,
-        'TRMODCategory' AS domainname,
-        domvalue_l AS domainvaluecode,
-        ddlanguage AS languagecode,
-        ddtext AS description
-    FROM "sap.tm.trp.db.semantic::dd07t" WHERE domname = '/sapapo/trmodcat' UNION ALL
+        log_sys as SysID,
+        'TRMODCategory' as DomainName,
+        DOMVALUE_L as DomainValueCode,
+        DDLANGUAGE as LanguageCode,
+        DDTEXT as Description
+    FROM "sap.tm.trp.db.semantic::DD07T" WHERE DOMNAME = '/SAPAPO/TRMODCAT' UNION ALL
     --Transportation Mode t
     SELECT
-        log_sys AS sysid,
-        'TransportationMode' AS domainname,
-        domvalue_l AS domainvaluecode,
-        ddlanguage AS languagecode,
-        ddtext AS description
-    FROM "sap.tm.trp.db.semantic::dd07t" WHERE domname = '/sapapo/tmodcod' UNION ALL
+        log_sys as SysID,
+        'TransportationMode' as DomainName,
+        DOMVALUE_L as DomainValueCode,
+        DDLANGUAGE as LanguageCode,
+        DDTEXT as Description
+    FROM "sap.tm.trp.db.semantic::DD07T" WHERE DOMNAME = '/SAPAPO/TMODCOD' UNION ALL
     --TRQ Category
     SELECT
-        log_sys AS sysid,
-        'TRQCategory' AS domainname,
-        domvalue_l AS domainvaluecode,
-        ddlanguage AS languagecode,
-        ddtext AS description
-    FROM "sap.tm.trp.db.semantic::dd07t" WHERE domname = '/scmtms/trq_category' UNION ALL
+        log_sys as SysID,
+        'TRQCategory' as DomainName,
+        DOMVALUE_L as DomainValueCode,
+        DDLANGUAGE as LanguageCode,
+        DDTEXT as Description
+    FROM "sap.tm.trp.db.semantic::DD07T" WHERE DOMNAME = '/SCMTMS/TRQ_CATEGORY' UNION ALL
     --TRQ Item category
     SELECT
-        log_sys AS sysid,
-        'TRQItemCategory' AS domainname,
-        domvalue_l AS domainvaluecode,
-        ddlanguage AS languagecode,
-        ddtext AS description
-    FROM "sap.tm.trp.db.semantic::dd07t" WHERE domname = '/scmtms/item_category' UNION ALL
+        log_sys as SysID,
+        'TRQItemCategory' as DomainName,
+        DOMVALUE_L as DomainValueCode,
+        DDLANGUAGE as LanguageCode,
+        DDTEXT as Description
+    FROM "sap.tm.trp.db.semantic::DD07T" WHERE DOMNAME = '/SCMTMS/ITEM_CATEGORY' UNION ALL
     --TRQ Item Type
     SELECT
-        log_sys AS sysid,
-        'TRQItemType' AS domainname,
-        item_type AS domainvaluecode,
-        langu AS languagecode,
-        description_s AS description
-    FROM "sap.tm.trp.db.semantic::/scmtms/c_trqitt" UNION ALL
+        log_sys as SysID,
+        'TRQItemType' as DomainName,
+        ITEM_TYPE as DomainValueCode,
+        LANGU as LanguageCode,
+        DESCRIPTION_S as Description
+    FROM "sap.tm.trp.db.semantic::/SCMTMS/C_TRQITT" UNION ALL
     --TRQ Type T
      SELECT
-        log_sys AS sysid,
-        'TRQTypeT' AS domainname,
-        type AS domainvaluecode,
-        langu AS languagecode,
-        description_s AS description
-    FROM "sap.tm.trp.db.semantic::/scmtms/c_trqtyt" UNION ALL
+        log_sys as SysID,
+        'TRQTypeT' as DomainName,
+        TYPE as DomainValueCode,
+        LANGU as LanguageCode,
+        DESCRIPTION_S as Description
+    FROM "sap.tm.trp.db.semantic::/SCMTMS/C_TRQTYT" UNION ALL
     --Traffic Direction
     SELECT
-        log_sys AS sysid,
-        'TrafficDirection' AS domainname,
-        domvalue_l AS domainvaluecode,
-        ddlanguage AS languagecode,
-        ddtext AS description
-    FROM "sap.tm.trp.db.semantic::dd07t" WHERE domname = '/scmtms/traffic_direction' UNION ALL
+        log_sys as SysID,
+        'TrafficDirection' as DomainName,
+        DOMVALUE_L as DomainValueCode,
+        DDLANGUAGE as LanguageCode,
+        DDTEXT as Description
+    FROM "sap.tm.trp.db.semantic::DD07T" WHERE DOMNAME = '/SCMTMS/TRAFFIC_DIRECTION' UNION ALL
     --Transportation Means t
     SELECT
-        log_sys AS sysid,
-        'MeansOfTransport' AS domainname,
-        trp_mtr AS domainvaluecode,
-        lang AS languagecode,
-        description AS description
-    FROM "sap.tm.trp.db.semantic::/trp/ntw_mtrt";
+        log_sys as SysID,
+        'MeansOfTransport' as DomainName,
+        TRP_MTR as DomainValueCode,
+        LANG as LanguageCode,
+        DESCRIPTION as Description
+    FROM "sap.tm.trp.db.semantic::/TRP/NTW_MTRT";
 
-    upsert "SAP_TRP_DB_TEXTS"
-    SELECT * FROM :text_data;
+    UPSERT "SAP_TRP_DB_TEXTS"
+    SELECT * FROM :Text_data;
 
 --BusinessPartners
-    upsert"SAP_TRP_DB_BUSINESSPARTNERS"
+    UPSERT"SAP_TRP_DB_BUSINESSPARTNERS"
     SELECT
-        log_sys AS sysid,
-        id,
-        name AS firstname,
-        last_name AS lastname
+        log_sys as SysID,
+        ID,
+        NAME as FirstName,
+        LAST_NAME as LastName
     FROM "sap.tm.trp.db.semantic.common::v_partner";
 
 --BusinessPartnerRoles
-    upsert "SAP_TRP_DB_BUSINESSPARTNERROLES"
+    UPSERT "SAP_TRP_DB_BUSINESSPARTNERROLES"
     SELECT
-        log_sys AS sysid,
-        partner_type_code AS code,
-        name AS name
+        log_sys as SysID,
+        PARTNER_TYPE_CODE as Code,
+        NAME as Name
     FROM "sap.tm.trp.db.semantic.common::v_partnertype";
 
 --Languages
-    upsert "SAP_TRP_DB_LANGUAGES"
+    UPSERT "SAP_TRP_DB_LANGUAGES"
     SELECT
-        log_sys AS sysid,
-        code AS code,
-        DESC AS languagedescription
+        log_sys as SysID,
+        CODE as Code,
+        DESC as LanguageDescription
     FROM "sap.tm.trp.db.semantic.common::v_language";
 
 --MTRMappings
-    upsert "SAP_TRP_DB_MTRMAPPINGS"
+    UPSERT "SAP_TRP_DB_MTRMAPPINGS"
     SELECT
-        log_sys AS sysid,
-        mot AS category,
-        mtr AS logistictransportationmeanscode,
-        trp_mtr AS trptransportationmeanscode
+        log_sys as SysID,
+        MOT as Category,
+        MTR as LogisticTransportationMeansCode,
+        TRP_MTR as TRPTransportationMeansCode
     FROM "sap.tm.trp.db.semantic.common::v_mtr_map";
 
 --Units
-    upsert "SAP_TRP_DB_UNITS"
+    UPSERT "SAP_TRP_DB_UNITS"
     SELECT
-        log_sys AS sysid,
-        uom,
-        uom_code AS uomcode,
-        NULL AS languagecode,
-        uom_desc AS uomdesc
+        log_sys as SysID,
+        UOM,
+        UOM_CODE as UOMCode,
+        NULL as LANGUAGECODE,
+        UOM_DESC as UOMDesc
     FROM "sap.tm.trp.db.semantic.common::v_uom";
-END;
+END;    

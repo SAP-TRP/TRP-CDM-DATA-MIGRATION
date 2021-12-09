@@ -1,4 +1,7 @@
-PROCEDURE "sap_trp_db_p_ext_cdm_migration_orders"() LANGUAGE SQLSCRIPT SQL SECURITY INVOKER AS BEGIN
+PROCEDURE "SAP_TRP_DB_P_EXT_CDM_MIGRATION_ORDERS"() 
+    LANGUAGE SQLSCRIPT
+    SQL SECURITY INVOKER 
+AS BEGIN
 DECLARE tu_last_update_time timestamp;
 DECLARE tr_last_update_time timestamp;
 DECLARE fo_last_update_time timestamp;
@@ -6,9 +9,8 @@ DECLARE stg_last_update_time timestamp;
 DECLARE stp_last_update_time timestamp;
 DECLARE dbp_last_update_time timestamp;
 DECLARE tu_att_last_update_time timestamp;
-DECLARE tolerance VARCHAR(500) default '1';
+DECLARE tolerance VARCHAR(500) DEFAULT '1';
 DECLARE lv_count INTEGER;
-
 SELECT max(changedon) INTO tu_last_update_time
 FROM "SAP_TRP_DB_TRANSPORTATIONUNITS";
 SELECT max(changedon) INTO tr_last_update_time
@@ -23,130 +25,128 @@ SELECT max(changedon) INTO dbp_last_update_time
 FROM "SAP_TRP_DB_DOCUMENTBUSINESSPARTNERS";
 SELECT max(changedon) INTO tu_att_last_update_time
 FROM "SAP_TRP_DB_TRANSPORTATIONUNITITEMATTRIBUTES";
-
-SELECT COUNT(*) INTO lv_count
+SELECT count(*) INTO lv_count
 FROM "sap.tm.trp.db.systemmanagement.customization::t_general_parameters"
 WHERE name = 'cdm_delta_tolerance';
-
 IF :lv_count = 1 THEN
-    SELECT CASE
-            WHEN value = 'X' THEN 0.5
-            ELSE value
-        END AS tolerance INTO tolerance --User is expected to maintain value in hrs default is 30mins
-    FROM "sap.tm.trp.db.systemmanagement.customization::t_general_parameters"
-    WHERE name = 'cdm_delta_tolerance';
+SELECT CASE
+        WHEN value = 'X' THEN 0.5
+        ELSE value
+    END AS tolerance INTO tolerance --User is expected to maintain value in hrs default is 30mins
+FROM "sap.tm.trp.db.systemmanagement.customization::t_general_parameters"
+WHERE name = 'cdm_delta_tolerance';
 END IF;
 
 upsert "SAP_TRP_DB_TRANSPORTATIONUNITS"
-SELECT t1.log_sys AS sysid,
-    db_key AS dbkey,
-    tor_id AS transportationunitid,
-    tor_cat AS transportationunitcategory,
-    tor_type AS transportationunittype,
-    movement_cat AS movnmtcategory,
-    execution AS executionstatus,
-    lifecycle AS lifecycle,
-    CASE WHEN t3.statistical IS NULL THEN 'C' ELSE 'M' END AS haulagetype,
-    plan_status_root AS planstatus,
-    to_timestamp(created_on) AS createdon,
-    to_timestamp(changed_on) AS changedon
-FROM "sap.tm.trp.db.semantic::/scmtms/d_torrot" t1
-    left join (
-        SELECT log_sys,mandt,root_key,statistical FROM "sap.tm.trp.db.semantic::/scmtms/d_torsts" t2
-        WHERE statistical = 'X' GROUP BY log_sys,mandt,root_key,statistical
-    ) t3
+SELECT T1.LOG_SYS as SysID,
+    DB_KEY as DBKey,
+    TOR_ID as TransportationUnitID,
+    TOR_CAT as TransportationUnitCategory,
+    TOR_TYPE as TransportationUnitType,
+    MOVEMENT_CAT as MovnmtCategory,
+    EXECUTION as ExecutionStatus,
+    LIFECYCLE as Lifecycle,
+    CASE WHEN T3.STATISTICAL IS NULL THEN 'C' ELSE 'M' END as HaulageType,
+    PLAN_STATUS_ROOT as PlanStatus,
+    TO_TIMESTAMP(CREATED_ON) as CreatedOn,
+    TO_TIMESTAMP(CHANGED_ON) as ChangedOn
+FROM "sap.tm.trp.db.semantic::/SCMTMS/D_TORROT" T1
+    LEFT JOIN (
+        SELECT LOG_SYS,MANDT,ROOT_KEY,STATISTICAL FROM "sap.tm.trp.db.semantic::/SCMTMS/D_TORSTS" T2 
+        WHERE STATISTICAL = 'X' GROUP BY LOG_SYS,MANDT,ROOT_KEY,STATISTICAL
+    ) T3 
     ON (
-        t1.log_sys = t3.log_sys
-        AND t1.mandt = t3.mandt
-        AND t1.db_key = t3.root_key
+        T1.LOG_SYS = T3.LOG_SYS
+        AND T1.MANDT = T3.MANDT
+        AND T1.DB_KEY = T3.ROOT_KEY
     )
-WHERE (
+WHERE T1.TOR_CAT IN ('TU')
+    AND (
         :tu_last_update_time IS NULL
         OR to_timestamp(changed_on) > add_seconds(:tu_last_update_time, -1 * 60 * 60 * :tolerance)
-    ) AND t1.tor_cat = 'TU';
---DO BEGIN 'ITEM_CAT'--tu_stop_tf.LOG_LOC_UUID AS sourcelocationid,'20'--tu_stop_tl.LOG_LOC_UUID AS destinationlocationid,'12''TF''TL''TU''''M'-- trans_item table insert script--LEFT OUTER JOIN "sap.tm.trp.db.semantic.common::v_mtr_map" v_map ON (tu_stage.MOT = v_map.MOT AND tu_stage.MTR_TCO = v_map.MTR)--RUN IT IN DO BEGIN--LEFT OUTER JOIN "SAP_TM_TRP_DB_SEMANTIC_COMMON_V_TRANSPORTATION_MEANS" tran_means ON (v_map.TRP_MTR = tran_means.CODE)--tu_stage.from_stop_key = tu_stop.db_key"SAP_TRP_DB_TRANSPORTATIONUNITITEMS"--basic.departuretime,--basic.arrivaltime,--END;"SAP_TRP_DB_TRANSPORTATIONREQUESTS""SAP_TRP_DB_TRANSPORTATIONREQUESTITEMS""SAP_TRP_DB_FREIGHTORDERS"'BO''TO'"SAP_TRP_DB_FREIGHTORDERITEMS"'BO''TO'"SAP_TRP_DB_STAGES"'BO''TO'"SAP_TRP_DB_STOPS"'20''12''BO''TO'"SAP_TRP_DB_DOCUMENTBUSINESSPARTNERS"'ShipperId''TU''00''05''10''ConsigneId''TU''00''05''10'-
-'Customer'
+    );
+
 lt_tu_item_cat_all =
 SELECT DISTINCT a.value
 FROM "sap.tm.trp.db.systemmanagement::t_config_cust" a
-WHERE a.key = 'Shipper';
+WHERE a.key = 'ITEM_CAT';
 
 lt_tu_basic_detail =
-SELECT DISTINCT
+SELECT DISTINCT 
 	tu_unit.log_sys,
 	tu_unit.mandt,
     tu_unit.tor_id AS tu_id,
     tu_unit.db_key AS tu_key,
     tu_item.db_key AS dbkey,
-    tu_item.parent_key AS transportationunitkey,
-    tu_item.src_stop_key AS fromstopkey,
-    tu_item.des_stop_key AS tostopkey,
+    tu_item.PARENT_KEY AS transportationunitkey,
+    tu_item.SRC_STOP_KEY AS fromstopkey,
+    tu_item.DES_STOP_KEY AS tostopkey,
     tu_item.item_cat AS itemcategory,
     res_head.resuid AS resourceid,
-    tu_item.res_id AS resourcename,
-    tu_item.tures_cat AS equipmentgroup,
-    tu_item.tures_tco AS equipmentcode,
+    tu_item.RES_ID AS resourcename,
+    tu_item.TURES_CAT AS equipmentgroup,
+    tu_item.TURES_TCO AS equipmentcode,
     tu_item.qua_pcs_val AS quantity,
     tu_item.qua_pcs_uni AS quantityunit,
     tu_item.leading_item_key AS leadingitemkey,
     tu_item.mot AS transportationmode,
     tu_item.ref_trq_root_key AS transportationrequestkey,
     tu_item.ref_trq_item_key AS transportationrequestitemkey,
-    'Consignee'
+    --tu_stop_tf.LOG_LOC_UUID AS sourcelocationid,
     src_loc.scuguid22 AS sourcelocationid,
-    tu_stop_tf.log_locid AS sourcelocationname,
+    tu_stop_tf.LOG_LOCID AS sourcelocationname,
     tu_stop_tf.sel_time AS departuretime,
-    CASE WHEN tu_stop_tf.handling_exec < 'Carrier' THEN 0 ELSE 1 END AS deaprturedflag,
-    'TO'
+    CASE WHEN tu_stop_tf.HANDLING_EXEC < '20' THEN 0 ELSE 1 END AS deaprturedflag,
+    --tu_stop_tl.LOG_LOC_UUID AS destinationlocationid,
     dest_loc.scuguid22 AS destinationlocationid,
-    tu_stop_tl.log_locid AS destinationlocationname,
+    tu_stop_tl.LOG_LOCID AS destinationlocationname,
     tu_stop_tl.sel_time AS arrivaltime,
-    CASE WHEN tu_stop_tl.handling_exec < 'BO' THEN 0 ELSE 1 END AS unloadedflag
-FROM "sap.tm.trp.db.semantic::/scmtms/d_torrot" AS tu_unit
-    INNER JOIN "sap.tm.trp.db.semantic::/scmtms/d_torite" AS tu_item
-    ON tu_unit.log_sys = tu_item.log_sys  AND tu_unit.mandt = tu_item.mandt
-    AND  tu_unit.db_key = tu_item.parent_key
+    CASE WHEN tu_stop_tl.HANDLING_EXEC < '12' THEN 0 ELSE 1 END AS unloadedflag
+FROM "sap.tm.trp.db.semantic::/SCMTMS/D_TORROT" AS tu_unit
+    INNER JOIN "sap.tm.trp.db.semantic::/SCMTMS/D_TORITE" AS tu_item 
+    ON tu_unit.LOG_SYS = tu_item.LOG_SYS  AND tu_unit.mandt = tu_item.mandt
+    and  tu_unit.db_key = tu_item.PARENT_KEY
     AND tu_item.item_cat IN (
         SELECT value
         FROM :lt_tu_item_cat_all
     )
-    INNER JOIN "sap.tm.trp.db.semantic::/scmtms/d_torstp" AS tu_stop_tf
+    INNER JOIN "sap.tm.trp.db.semantic::/SCMTMS/D_TORSTP" AS tu_stop_tf 
     ON tu_unit.log_sys = tu_stop_tf.log_sys
     AND tu_unit.mandt = tu_stop_tf.mandt
     AND tu_stop_tf.parent_key = tu_unit.db_key
-    AND tu_stop_tf.stop_role = '00'
-    INNER JOIN "sap.tm.trp.db.semantic::/scmtms/d_torstp" AS tu_stop_tl
+    AND tu_stop_tf.stop_role = 'TF'
+    INNER JOIN "sap.tm.trp.db.semantic::/SCMTMS/D_TORSTP" AS tu_stop_tl 
     ON  tu_unit.log_sys = tu_stop_tl.log_sys
     AND tu_unit.mandt = tu_stop_tl.mandt
     AND tu_stop_tl.parent_key = tu_unit.db_key
-    AND tu_stop_tl.stop_role = '05'
-    LEFT OUTER JOIN "sap.tm.trp.db.semantic::/scmb/toentity" AS src_loc
-    ON tu_stop_tf.log_sys = src_loc.log_sys AND tu_stop_tf.mandt = src_loc.mandt AND tu_stop_tf.log_loc_uuid = src_loc.scuguid
-    LEFT OUTER JOIN "sap.tm.trp.db.semantic::/scmb/toentity" AS dest_loc
-    ON tu_stop_tl.log_sys = dest_loc.log_sys AND tu_stop_tl.mandt = dest_loc.mandt AND tu_stop_tl.log_loc_uuid = dest_loc.scuguid
-    LEFT OUTER JOIN "sap.tm.trp.db.semantic::/sapapo/res_head" AS res_head
-    ON res_head.log_sys = tu_unit.log_sys
+    AND tu_stop_tl.stop_role = 'TL'
+    LEFT OUTER JOIN "sap.tm.trp.db.semantic::/SCMB/TOENTITY" AS src_loc
+    on tu_stop_tf.log_sys = src_loc.log_sys and tu_stop_tf.mandt = src_loc.mandt and tu_stop_tf.LOG_LOC_UUID = src_loc.scuguid
+    LEFT OUTER JOIN "sap.tm.trp.db.semantic::/SCMB/TOENTITY" AS dest_loc
+    on tu_stop_tl.log_sys = dest_loc.log_sys and tu_stop_tl.mandt = dest_loc.mandt and tu_stop_tl.LOG_LOC_UUID = dest_loc.scuguid
+    LEFT OUTER JOIN "sap.tm.trp.db.semantic::/SAPAPO/RES_HEAD" AS res_head 
+    ON res_head.LOG_SYS = tu_unit.LOG_SYS 
     AND res_head.mandt = tu_unit.mandt
-    AND tu_item.res_id = res_head.name
-    WHERE tu_unit.tor_cat = '10' AND (
+    AND tu_item.RES_ID = res_head.name
+    WHERE tu_unit.TOR_CAT = 'TU' AND (
         :tu_last_update_time IS NULL
         OR to_timestamp(tu_unit.changed_on) > add_seconds(:tu_last_update_time, -1 * 60 * 60 * :tolerance)
     );
-
+    
 lt_stage_sequence =
-SELECT
+SELECT 
 	basic.log_sys,
 	basic.mandt,
 	basic.tu_id,
     basic.tu_key,
     basic.dbkey,
     basic.tu_key AS leading_tu_key,
-    MIN(successor_id) AS start_seq,
-    max(successor_id) AS end_seq
+    MIN(SUCCESSOR_ID) AS start_seq,
+    max(SUCCESSOR_ID) AS end_seq
 FROM :lt_tu_basic_detail AS basic
-    INNER JOIN "sap.tm.trp.db.semantic::/scmtms/d_torsts" AS tu_stage ON basic.log_sys = tu_stage.log_sys AND basic.mandt = tu_stage.mandt AND basic.transportationunitkey = tu_stage.root_key
-WHERE  tu_stage.successor_id <> --json collection - TransportationUnitItemAttributes  AND tu_stage.stage_cat = --UPSERT  "SAP_TRP_DB_TRANSPORTATIONUNITITEMATTRIBUTES"
-GROUP BY
+    INNER JOIN "sap.tm.trp.db.semantic::/SCMTMS/D_TORSTS" AS tu_stage ON basic.log_sys = tu_stage.LOG_SYS and basic.mandt = tu_stage.mandt and basic.transportationunitkey = tu_stage.root_key
+WHERE  tu_stage.SUCCESSOR_ID <> '' AND tu_stage.STAGE_CAT = 'M'
+GROUP BY 
 	basic.log_sys,
 	basic.mandt,
 	basic.tu_id,
@@ -154,14 +154,14 @@ GROUP BY
     basic.dbkey;
 
 lt_pol =
-SELECT DISTINCT t1.*,
+SELECT DISTINCT T1.*, 
   CASE
-        stp.cutoff_cargo
+        stp.CUTOFF_CARGO
         WHEN 0 THEN NULL
-        ELSE to_timestamp(stp.cutoff_cargo)
+        ELSE to_timestamp(stp.CUTOFF_CARGO)
     END AS vessel_cutoff_utc
     FROM (
-    	SELECT
+    	SELECT 
     basic.log_sys,
     basic.mandt,
     basic.tu_id,
@@ -169,28 +169,28 @@ SELECT DISTINCT t1.*,
     t2.scuguid22 AS pol,
     tu_stop.log_locid AS pol_name,
     tu_stop.assgn_stop_key AS pol_freight_order_stop_key,
-    tu_stage.tsp_id AS stage_carrier_pol,
-    tu_stage.vessel_id AS stage_vessel_pol,
-    tu_stage.voyage_id AS stage_voyage_pol,
-    tu_stage.mtr_tco AS meansoftransportation
+    tu_stage.TSP_ID AS stage_carrier_pol,
+    tu_stage.VESSEL_ID AS stage_vessel_pol,
+    tu_stage.VOYAGE_ID AS stage_voyage_pol,
+    tu_stage.MTR_TCO AS meansoftransportation
 FROM :lt_stage_sequence AS basic
-    LEFT OUTER JOIN "sap.tm.trp.db.semantic::/scmtms/d_torsts" AS tu_stage
-    ON basic.log_sys=tu_stage.log_sys AND basic.mandt = tu_stage.mandt AND basic.leading_tu_key = tu_stage.root_key
-    AND basic.start_seq = tu_stage.successor_id
-    --SELECT T1.LOG_SYS AS sysid, t2.db_key AS transportationunititemkey, json_query('
-    "ITEM_TYPE"
-    LEFT OUTER JOIN "sap.tm.trp.db.semantic::/scmtms/d_torstp" AS tu_stop ON ' || T2.ITEM_TYPE || '
-    basic.log_sys = tu_stop.log_sys AND basic.mandt = tu_stop.mandt AND tu_stage.parent_key = tu_stop.db_key
-    LEFT OUTER JOIN "sap.tm.trp.db.semantic::/scmb/toentity" AS t2
+    LEFT OUTER JOIN "sap.tm.trp.db.semantic::/SCMTMS/D_TORSTS" AS tu_stage 
+    ON basic.log_sys=tu_stage.log_sys and basic.mandt = tu_stage.mandt and basic.leading_tu_key = tu_stage.root_key
+    AND basic.start_seq = tu_stage.SUCCESSOR_ID
+    --LEFT OUTER JOIN "sap.tm.trp.db.semantic.common::v_mtr_map" v_map ON (tu_stage.MOT = v_map.MOT AND tu_stage.MTR_TCO = v_map.MTR)
+    --LEFT OUTER JOIN "SAP_TM_TRP_DB_SEMANTIC_COMMON_V_TRANSPORTATION_MEANS" tran_means ON (v_map.TRP_MTR = tran_means.CODE)
+    LEFT OUTER JOIN "sap.tm.trp.db.semantic::/SCMTMS/D_TORSTP" AS tu_stop ON --tu_stage.from_stop_key = tu_stop.db_key
+    basic.log_sys = tu_stop.log_sys and basic.mandt = tu_stop.mandt and tu_stage.parent_key = tu_stop.DB_KEY
+    LEFT OUTER JOIN "sap.tm.trp.db.semantic::/SCMB/TOENTITY" AS t2 
     ON tu_stop.log_sys = t2.log_sys
     AND tu_stop.mandt = t2.mandt
     AND tu_stop.log_loc_uuid = t2.scuguid
-    ) AS t1
-    LEFT OUTER JOIN "sap.tm.trp.db.semantic::/scmtms/d_torstp" stp
-    ON t1.log_sys=stp.log_sys AND t1.mandt = stp.mandt AND t1.pol_freight_order_stop_key=stp.db_key;
+    ) as T1 
+    LEFT OUTER JOIN "sap.tm.trp.db.semantic::/SCMTMS/D_TORSTP" stp 
+    ON t1.log_sys=stp.log_sys and t1.mandt = stp.mandt and t1.pol_freight_order_stop_key=stp.db_key;
 
 lt_pod =
- SELECT
+ SELECT 
     basic.log_sys,
     basic.mandt,
     basic.tu_id,
@@ -198,53 +198,50 @@ lt_pod =
     t2.scuguid22 AS pod,
     tu_stop.log_locid AS pod_name,
     tu_stop.assgn_stop_key AS pod_freight_order_stop_key,
-    tu_stage.tsp_id AS stage_carrier_pod,
-    tu_stage.vessel_id AS stage_vessel_pod,
-    tu_stage.voyage_id AS stage_voyage_pod,
-    tu_stage.mtr_tco AS meansoftransportation
+    tu_stage.TSP_ID AS stage_carrier_pod,
+    tu_stage.VESSEL_ID AS stage_vessel_pod,
+    tu_stage.VOYAGE_ID AS stage_voyage_pod,
+    tu_stage.MTR_TCO AS meansoftransportation
 FROM :lt_stage_sequence AS basic
-    LEFT OUTER JOIN "sap.tm.trp.db.semantic::/scmtms/d_torsts" AS tu_stage
+    LEFT OUTER JOIN "sap.tm.trp.db.semantic::/SCMTMS/D_TORSTS" AS tu_stage 
     ON basic.log_sys = tu_stage.log_sys
-    AND basic.mandt = tu_stage.mandt
+    and basic.mandt = tu_stage.mandt
     AND basic.leading_tu_key = tu_stage.root_key
-    AND basic.end_seq = tu_stage.successor_id
-    LEFT OUTER JOIN "sap.tm.trp.db.semantic::/scmtms/d_torstp" AS tu_stop
-    ON basic.log_sys = tu_stop.log_sys
-    AND basic.mandt = tu_stop.mandt
-    AND tu_stage.succ_stop_key = tu_stop.db_key
-    LEFT OUTER JOIN "sap.tm.trp.db.semantic::/scmb/toentity" AS t2
+    AND basic.end_seq = tu_stage.SUCCESSOR_ID
+    LEFT OUTER JOIN "sap.tm.trp.db.semantic::/SCMTMS/D_TORSTP" AS tu_stop 
+    ON basic.log_sys = tu_stop.log_sys 
+    and basic.mandt = tu_stop.mandt 
+    and tu_stage.SUCC_STOP_KEY = tu_stop.db_key
+    LEFT OUTER JOIN "sap.tm.trp.db.semantic::/SCMB/TOENTITY" AS t2 
     ON tu_stop.log_sys = t2.log_sys
     AND tu_stop.mandt = t2.mandt
     AND tu_stop.log_loc_uuid = t2.scuguid;
 
-upsert --' "SRC_STOP_KEY": "'|| T2.SRC_STOP_KEY  || '",'|| +
-SELECT DISTINCT
+UPSERT "SAP_TRP_DB_TRANSPORTATIONUNITITEMS"
+SELECT DISTINCT 
     basic.log_sys AS sysid,
     basic.dbkey,
     basic.transportationunitkey,
     basic.fromstopkey,
     basic.tostopkey,
     basic.itemcategory,
+    basic.resourceid,
     basic.resourcename,
     basic.equipmentgroup,
     basic.equipmentcode,
-    basic.quantity,
-    basic.quantityunit,
-    basic.leadingitemkey,
-    basic.transportationmode,
-    basic.transportationrequestkey,
-    basic.transportationrequestitemkey,
-    basic.resourceid,
     basic.sourcelocationid,
     basic.sourcelocationname,
-    CASE basic.departuretime WHEN 0 THEN to_timestamp('0001-01-01 00:00:00.000000000') ELSE to_timestamp(basic.departuretime) END AS departuretime,
-    --' "DES_STOP_KEY": "'|| T2.DES_STOP_KEY  || '",'|| +
+    CASE basic.departuretime WHEN 0 THEN TO_TIMESTAMP('0001-01-01 00:00:00.000000000') ELSE TO_TIMESTAMP(basic.departuretime) END as departuretime,
+    --basic.departuretime,
     basic.deaprturedflag,
     basic.destinationlocationid,
     basic.destinationlocationname,
-    CASE basic.arrivaltime WHEN 0 THEN to_timestamp('0001-01-01 00:00:00.000000000') ELSE to_timestamp(basic.arrivaltime) END AS arrivaltime,
-    --' "ITEM_CAT": "'|| T2.ITEM_CAT  || '",'|| +
+    CASE basic.arrivaltime WHEN 0 THEN TO_TIMESTAMP('0001-01-01 00:00:00.000000000') ELSE TO_TIMESTAMP(basic.arrivaltime) END as arrivaltime,
+    --basic.arrivaltime,
     basic.unloadedflag,
+    basic.quantity,
+    basic.quantityunit,
+    basic.leadingitemkey,
     pol.pol AS pol,
     pol.pol_name AS polname,
     pol.pol_freight_order_stop_key AS polfreightorderstopkey,
@@ -258,48 +255,50 @@ SELECT DISTINCT
     pod.stage_vessel_pod AS podvessel,
     pod.stage_voyage_pod AS podvoyage,
     pol.vessel_cutoff_utc AS vesselcutoffutc,
+    basic.transportationmode,
     IFNULL(
         pol.meansoftransportation,
         pod.meansoftransportation
-    ) AS meansoftransportation
+    ) AS meansoftransportation,
+    basic.transportationrequestkey,
+    basic.transportationrequestitemkey
 FROM :lt_tu_basic_detail AS basic
-    LEFT OUTER JOIN :lt_pol AS pol ON basic.tu_id = pol.tu_id
-    LEFT OUTER JOIN :lt_pod AS pod ON basic.tu_id = pod.tu_id;
---' "SHIPPER_ID": "'|| T2.SHIPPER_ID  || '",'|| +
---' "CONSIGNEE_ID": "'|| T2.CONSIGNEE_ID  || '",'|| +
-upsert --' "QUA_PCS_VAL": "'|| T2.QUA_PCS_VAL  || '",'|| +
-SELECT DISTINCT
-    log_sys AS sysid,
-    db_key AS dbkey,
-    trq_id AS id,
-    trq_cat AS category,
-    to_date(order_date) AS requestdate,
-    to_timestamp(created_on) AS createdon,
-    to_timestamp(changed_on) AS changedon
-FROM "sap.tm.trp.db.semantic::/scmtms/d_trqrot"
+    LEFT OUTER JOIN :lt_pol AS pol ON basic.log_sys = pol.log_sys and basic.mandt=pol.mandt and basic.tu_id = pol.tu_id
+    LEFT OUTER JOIN :lt_pod AS pod ON basic.log_sys = pod.log_sys and basic.mandt=pod.mandt and basic.tu_id = pod.tu_id;
+
+
+upsert "SAP_TRP_DB_TRANSPORTATIONREQUESTS"
+SELECT DISTINCT LOG_SYS as SysID,
+    DB_KEY as DBKey,
+    TRQ_ID as ID,
+    TRQ_CAT as Category,
+    TO_DATE(ORDER_DATE) as RequestDate,
+    TO_TIMESTAMP(CREATED_ON) as CreatedOn,
+    TO_TIMESTAMP(CHANGED_ON) as ChangedOn
+FROM "sap.tm.trp.db.semantic::/SCMTMS/D_TRQROT"
 WHERE (
         :tr_last_update_time IS NULL
         OR to_timestamp(changed_on) > add_seconds(:tr_last_update_time, -1 * 60 * 60 * :tolerance)
     );
 
-upsert --' "QUA_PCS_UNI": "'|| T2.QUA_PCS_UNI  || '",'|| +
-SELECT DISTINCT
+upsert "SAP_TRP_DB_TRANSPORTATIONREQUESTITEMS"
+SELECT DISTINCT 
     t1.log_sys AS sysid,
     t1.db_key AS dbkey,
-    t1.parent_key  AS transportationrequestkey,
+    t1.PARENT_KEY AS transportationrequestkey,
     t1.leading_item_key AS leadingitemkey,
     t1.provision_req AS provisionrequested,
     t1.empty_return_req AS emptyreturnrequested
-FROM "sap.tm.trp.db.semantic::/scmtms/d_trqitm" t1
-    INNER JOIN "sap.tm.trp.db.semantic::/scmtms/d_trqrot" t2
-    ON t1.log_sys = t2.log_sys AND t1.mandt = t2.mandt AND t1.parent_key = t2.db_key
+FROM "sap.tm.trp.db.semantic::/SCMTMS/D_TRQITM" t1 
+    INNER JOIN "sap.tm.trp.db.semantic::/SCMTMS/D_TRQROT" t2 
+    ON T1.LOG_SYS = T2.LOG_SYS AND T1.MANDT = T2.MANDT AND t1.PARENT_KEY = t2.db_key
 WHERE (
         :tr_last_update_time IS NULL
         OR to_timestamp(t2.changed_on) > add_seconds(:tr_last_update_time, -1 * 60 * 60 * :tolerance)
     );
 
-upsert --' "MOT": "'|| T2.MOT  || '",'|| +
-SELECT DISTINCT
+upsert "SAP_TRP_DB_FREIGHTORDERS"
+SELECT DISTINCT 
     log_sys AS sysid,
     db_key AS dbkey,
     tor_id AS freightorderid,
@@ -311,13 +310,14 @@ SELECT DISTINCT
     mtr AS meansoftransportation,
     to_timestamp(created_on) AS createdon,
     to_timestamp(changed_on) AS changedon
-FROM "sap.tm.trp.db.semantic::/scmtms/d_torrot"
-WHERE (
+FROM "sap.tm.trp.db.semantic::/SCMTMS/D_TORROT"
+WHERE TOR_CAT IN ('BO', 'TO')
+    AND (
         :fo_last_update_time IS NULL
         OR to_timestamp(changed_on) > add_seconds(:fo_last_update_time, -1 * 60 * 60 * :tolerance)
-    ) AND (tor_cat=--' "MOT_CAT": "'|| T2.MOT_CAT  || '",'|| + OR tor_cat=--' "LEADING_ITEM_KEY": "'|| T2.LEADING_ITEM_KEY  || '",'|| +);
+    );
 
-upsert --' "REF_ITEM_KEY": "'|| T2.REF_ITEM_KEY  || '",'|| +
+upsert "SAP_TRP_DB_FREIGHTORDERITEMS"
 SELECT DISTINCT
     t1.log_sys AS sysid,
     t1.db_key AS dbkey,
@@ -328,7 +328,7 @@ SELECT DISTINCT
     t1.item_cat AS itemcategory,
     t1.res_id AS resourcename,
     t1.tures_tco AS equipmenttype,
-    t1.tures_cat AS equipentgroup,
+    t1.TURES_CAT AS equipentgroup,
     t1.qua_pcs_val AS quantity,
     t1.qua_pcs_uni AS quantityunit,
     t1.leading_item_key AS leadingitemkey,
@@ -337,15 +337,16 @@ SELECT DISTINCT
     t1.mot AS transportationmode,
     t1.sched_key AS schedulekey,
     t1.voyage_id AS voyageid
-FROM "sap.tm.trp.db.semantic::/scmtms/d_torite" t1
-    INNER JOIN "sap.tm.trp.db.semantic::/scmtms/d_torrot" t3
-    ON t1.log_sys = t3.log_sys AND t1.mandt = t3.mandt AND t1.parent_key = t3.db_key
-WHERE (
+FROM "sap.tm.trp.db.semantic::/SCMTMS/D_TORITE" t1
+    INNER JOIN "sap.tm.trp.db.semantic::/SCMTMS/D_TORROT" t3 
+    ON t1.log_sys = t3.log_sys and t1.mandt = t3.mandt and t1.parent_key = t3.db_key
+WHERE T3.TOR_CAT IN ('BO', 'TO')
+    AND (
         :fo_last_update_time IS NULL
         OR to_timestamp(t3.changed_on) > add_seconds(:fo_last_update_time, -1 * 60 * 60 * :tolerance)
-    ) AND (t3.tor_cat=--' "REF_ROOT_KEY": "'|| T2.REF_ROOT_KEY  || '",'|| + OR t3.tor_cat=--' "TRQ_ID": "'|| T2.TRQ_ID  || '",'|| +);
+    );
 
-upsert --' "TRQ_ITEM_ID": "'|| T2.TRQ_ITEM_ID  || '",'|| +
+upsert "SAP_TRP_DB_STAGES"
 SELECT t1.log_sys AS sysid,
     t1.db_key AS dbkey,
     t1.root_key AS hostkey,
@@ -353,7 +354,7 @@ SELECT t1.log_sys AS sysid,
     t1.succ_stop_key AS tostopkey,
     t1.sched_ref AS schedulekey,
     t1.stop_succ_cat AS stopsuccessorcategory,
-    t1.successor_id AS sequence,
+    case when t1.successor_id = '' then 0 ELSE to_int(t1.successor_id) END AS sequence,
     t1.mot AS transportationmode,
     t1.mot_cat AS transportationmodecategory,
     t1.mtr_tco AS meansoftransportation,
@@ -365,15 +366,16 @@ SELECT t1.log_sys AS sysid,
     t1.voyage_id AS voyageid,
     to_timestamp(t2.created_on) AS createdon,
     to_timestamp(t2.changed_on) AS changedon
-FROM "sap.tm.trp.db.semantic::/scmtms/d_torsts" t1
-    INNER JOIN "sap.tm.trp.db.semantic::/scmtms/d_torrot" t2
-    ON t1.log_sys = t2.log_sys AND t1.mandt = t2.mandt AND t1.root_key = t2.db_key
-WHERE (
+FROM "sap.tm.trp.db.semantic::/SCMTMS/D_TORSTS" t1
+    INNER JOIN "sap.tm.trp.db.semantic::/SCMTMS/D_TORROT" t2 
+    ON t1.log_sys = t2.log_sys and t1.mandt = t2.mandt and t1.root_key = t2.db_key
+WHERE T2.TOR_CAT IN ('BO', 'TO', 'TU')
+    AND (
         :stg_last_update_time IS NULL
         OR to_timestamp(t2.changed_on) > add_seconds(:stg_last_update_time, -1 * 60 * 60 * :tolerance)
-    ) AND (t2.tor_cat=--' "TRQ_CAT": "'|| T1.TRQ_CAT  || '",'|| + OR t2.tor_cat=--' "REF_TRQ_ITEM_KEY": "'|| T2.REF_TRQ_ITEM_KEY  || '",'|| +);
+    );
 
-upsert --' "REF_TRQ_ROOT_KEY": "'|| T2.REF_TRQ_ROOT_KEY  || '",'|| +
+upsert "SAP_TRP_DB_STOPS"
 SELECT t1.log_sys AS sysid,
     t1.db_key AS dbkey,
     t1.parent_key AS hostkey,
@@ -384,109 +386,110 @@ SELECT t1.log_sys AS sysid,
     t1.stop_seq_pos AS stopposition,
     t1.stop_fix AS stopfixed,
     t1.stop_role AS stoprole,
-    t1.stop_current AS iscurrentstop,
-    CASE
-        WHEN t1.handling_exec < --' "PLATENUMBER": "'|| T2.PLATENUMBER  || '",'|| + THEN 0
-        ELSE 1
-    END AS departured,
-    CASE
-        WHEN t1.handling_exec < --' "SCHED_KEY": "'|| T2.SCHED_KEY  || '",'|| + THEN 0
-        ELSE 1
-    END AS unloaded,
-    t1.assgn_stop_key AS assignedstopkey,
-    to_timestamp(t4.created_on) AS createdon,
-    to_timestamp(t4.changed_on) AS changedon,
-    t1.stop_cat AS stopcat,
     CASE
         t1.plan_trans_time
         WHEN 0 THEN to_timestamp('1901-01-01 00:00:00.000000000')
         ELSE to_nvarchar(t1.plan_trans_time)
-    END AS plantranstime
-FROM "sap.tm.trp.db.semantic::/scmtms/d_torstp" t1
-    LEFT OUTER JOIN "sap.tm.trp.db.semantic::/scmb/toentity" t2 ON (
+    END AS plantranstime,
+    t1.stop_current AS iscurrentstop,
+    CASE
+        WHEN t1.handling_exec < '20' THEN 0
+        ELSE 1
+    END AS departured,
+    CASE
+        WHEN t1.handling_exec < '12' THEN 0
+        ELSE 1
+    END AS unloaded,
+    t1.assgn_stop_key AS assignedstopkey,
+    t1.stop_cat AS stopcat,
+    to_timestamp(t4.created_on) AS createdon,
+    to_timestamp(t4.changed_on) AS changedon
+FROM "sap.tm.trp.db.semantic::/SCMTMS/D_TORSTP" t1    
+    LEFT OUTER JOIN "sap.tm.trp.db.semantic::/SCMB/TOENTITY" t2 ON (
         t1.log_sys = t2.log_sys
         AND t1.mandt = t2.mandt
         AND t1.log_loc_uuid = t2.scuguid
     )
-    INNER JOIN "sap.tm.trp.db.semantic::/scmtms/d_torrot" t4
-    ON t1.log_sys = t4.log_sys AND t1.mandt = t4.mandt AND  t1.parent_key = t4.db_key
+    left join "sap.tm.trp.db.semantic::/SCMTMS/D_TORROT" t4 
+    ON t1.log_sys = t4.log_sys and t1.mandt = t4.mandt and  t1.parent_key = t4.db_key
 WHERE length(t1.plan_trans_time) IN (0, 14)
+    AND T4.TOR_CAT IN ('BO', 'TO', 'TU')
     AND (
         :stp_last_update_time IS NULL
         OR to_timestamp(t4.changed_on) > add_seconds(:stp_last_update_time, -1 * 60 * 60 * :tolerance)
-    ) AND (t4.tor_cat=--' "SCHED_DEP": "'|| T2.SCHED_DEP  || '",'|| + OR t4.tor_cat=--' "VOYAGE_ID": "'|| T2.VOYAGE_ID  || '",'|| +);
+    );
 
-upsert --' "VESSEL_ID": "'|| T2.VESSEL_ID  || '",'|| +
+upsert "SAP_TRP_DB_DOCUMENTBUSINESSPARTNERS"
 SELECT
     t1.log_sys AS sysid,
     t1.db_key AS hostdbkey,
     t1.shipperid AS businesspartnerid,
-    --' "PROVISION_REQ": "'|| T2.PROVISION_REQ  || '",'|| + AS businesspartnerrole,
+    'ShipperId' AS businesspartnerrole,
     to_timestamp(created_on) AS createdon,
     to_timestamp(changed_on) AS changedon
-FROM "sap.tm.trp.db.semantic::/scmtms/d_torrot" AS t1
-WHERE t1.tor_cat = --' "CHANGED_ON": "'|| T1.CHANGED_ON  || '",'|| +
-    AND t1.lifecycle NOT IN (--' "RES_ID": "'|| t2.res_id  || +, --'", ',')
+FROM "sap.tm.trp.db.semantic::/SCMTMS/D_TORROT" AS t1
+WHERE t1.tor_cat = 'TU'
+    AND t1.lifecycle NOT IN ('00', '05', '10')
     AND (
         :dbp_last_update_time IS NULL
         OR to_timestamp(t1.changed_on) > add_seconds(:dbp_last_update_time, -1 * 60 * 60 * :tolerance)
     )
 UNION ALL
-SELECT
+SELECT 
     t1.log_sys AS sysid,
     t1.db_key AS hostdbkey,
     t1.consigneeid AS businesspartnerid,
-    --FROM "sap.tm.trp.db.semantic.order::v_transportation_unit" t1  AS businesspartnerrole,
+    'ConsigneId' AS businesspartnerrole,
     to_timestamp(created_on) AS createdon,
     to_timestamp(changed_on) AS changedon
-FROM "sap.tm.trp.db.semantic::/scmtms/d_torrot" AS t1
-WHERE t1.tor_cat = --INNER JOIN "sap.tm.trp.db.semantic.order::v_transportation_unit_item_attributes" t2
-    AND t1.lifecycle NOT IN (--ON t1.db_key=t2.parent_key, --WHERE t2.item_cat='TUR' AND (:tu_att_last_update_time IS NULL OR to_timestamp(t1.changed_on) > add_seconds(:tu_att_last_update_time,-1*60*60*1));, ---)
+FROM "sap.tm.trp.db.semantic::/SCMTMS/D_TORROT" AS t1
+WHERE t1.tor_cat = 'TU'
+    AND t1.lifecycle NOT IN ('00', '05', '10')
     AND (
         :dbp_last_update_time IS NULL
         OR to_timestamp(t1.changed_on) > add_seconds(:dbp_last_update_time, -1 * 60 * 60 * :tolerance)
     )
 UNION ALL
-SELECT
+SELECT 
     t1.log_sys AS sysid,
     t1.db_key AS hostdbkey,
     t1.order_party_id AS businesspartnerid,
-    --- AS businesspartnerrole,
+    'Customer' AS businesspartnerrole,
     to_timestamp(created_on) AS createdon,
     to_timestamp(changed_on) AS changedon
-FROM "sap.tm.trp.db.semantic::/scmtms/d_trqrot" AS t1
-    left join "sap.tm.trp.db.semantic::but000" AS cus
-    ON t1.log_sys = cus.log_sys AND t1.mandt = cus.client AND t1.order_party_id = cus.partner
+FROM "sap.tm.trp.db.semantic::/SCMTMS/D_TRQROT" AS t1
+    left join "sap.tm.trp.db.semantic::BUT000" AS cus 
+    ON t1.log_sys = cus.log_sys and t1.mandt = cus.CLIENT and t1.order_party_id = cus.partner
 WHERE (
         :dbp_last_update_time IS NULL
         OR to_timestamp(t1.changed_on) > add_seconds(:dbp_last_update_time, -1 * 60 * 60 * :tolerance)
     )
 UNION ALL
-SELECT
+SELECT 
     t1.log_sys AS sysid,
     t1.db_key AS hostdbkey,
     t1.shipper_id AS businesspartnerid,
-    --- AS businesspartnerrole,
+    'Shipper' AS businesspartnerrole,
     to_timestamp(created_on) AS createdon,
     to_timestamp(changed_on) AS changedon
-FROM "sap.tm.trp.db.semantic::/scmtms/d_trqrot" AS t1
-    left join "sap.tm.trp.db.semantic::but000" AS shp
-    ON t1.log_sys = shp.log_sys AND t1.mandt = shp.client AND t1.shipper_id = shp.partner
+FROM "sap.tm.trp.db.semantic::/SCMTMS/D_TRQROT" AS t1
+    left join "sap.tm.trp.db.semantic::BUT000" AS shp 
+    ON t1.log_sys = shp.log_sys and t1.mandt = shp.CLIENT and t1.shipper_id = shp.partner
 WHERE (
         :dbp_last_update_time IS NULL
         OR to_timestamp(t1.changed_on) > add_seconds(:dbp_last_update_time, -1 * 60 * 60 * :tolerance)
     )
 UNION ALL
-SELECT
+SELECT 
     t1.log_sys AS sysid,
     t1.db_key AS hostdbkey,
     t1.consignee_id AS businesspartnerid,
-    --- AS businesspartnerrole,
+    'Consignee' AS businesspartnerrole,
     to_timestamp(created_on) AS createdon,
     to_timestamp(changed_on) AS changedon
-FROM "sap.tm.trp.db.semantic::/scmtms/d_trqrot" AS t1
-    left join "sap.tm.trp.db.semantic::but000" AS con
-    ON t1.log_sys = con.log_sys AND t1.mandt = con.client AND t1.consignee_id = con.partner
+FROM "sap.tm.trp.db.semantic::/SCMTMS/D_TRQROT" AS t1
+    left join "sap.tm.trp.db.semantic::BUT000" AS con 
+    ON t1.log_sys = con.log_sys and t1.mandt = con.CLIENT and t1.consignee_id = con.partner
 WHERE (
         :dbp_last_update_time IS NULL
         OR to_timestamp(t1.changed_on) > add_seconds(:dbp_last_update_time, -1 * 60 * 60 * :tolerance)
@@ -496,52 +499,38 @@ SELECT
     t1.log_sys AS sysid,
     t1.db_key AS hostdbkey,
     t1.tspid AS businesspartnerid,
-    --- AS businesspartnerrole,
+    'Carrier' AS businesspartnerrole,
     to_timestamp(created_on) AS createdon,
     to_timestamp(changed_on) AS changedon
-FROM "sap.tm.trp.db.semantic::/scmtms/d_torrot" AS t1
+FROM "sap.tm.trp.db.semantic::/SCMTMS/D_TORROT" AS t1
 WHERE (
-        t1.tor_cat = ---
-        OR t1.tor_cat = ---
+        t1.tor_cat = 'TO'
+        OR t1.tor_cat = 'BO'
     )
-    AND t1.lifecycle NOT IN (---, ---, ---)
+    AND t1.lifecycle NOT IN ('00', '05', '10')
     AND (
         :dbp_last_update_time IS NULL
         OR to_timestamp(t1.changed_on) > add_seconds(:dbp_last_update_time, -1 * 60 * 60 * :tolerance)
     );
 
-    ---
-    ---
-    ---{ ---: "---",'|| +
-    ---
-    ---
-    ---
-    ---
-    ---
-    ---
-    ---
-    ---
-    ---
-    ---
-    ---
-    ---
-    ---
-    ---
-    ---
-    ---
-    ---
-    ---
-    ---
-    ---
-    ---
-    ---
-    ---
-    ---
-    ---
-    ---}}---$') AS jsonattributes, to_timestamp(t1.changed_on) AS changedon
-    ---
-    ---
-    ---
-    ---
-
+--json collection - TransportationUnitItemAttributes 
+-- UPSERT "SAP_TRP_DB_TRANSPORTATIONUNITITEMATTRIBUTES"
+-- SELECT T1.LOG_SYS AS sysid,
+--     t2.db_key AS transportationunititemkey,
+--     json_query(
+--         '{ "ITEM_TYPE": "' || T2.ITEM_CAT || '",' || + ' "SRC_STOP_KEY": "' || T2.SRC_STOP_KEY || '",' || + ' "DES_STOP_KEY": "' || T2.DES_STOP_KEY || '",' || + ' "ITEM_CAT": "' || T2.ITEM_CAT || '",' || + ' "SHIPPER_ID": "' || T2.SHIPPER_ID || '",' || + ' "CONSIGNEE_ID": "' || T2.CONSIGNEE_ID || '",' || + ' "QUA_PCS_VAL": "' || T2.QUA_PCS_VAL || '",' || + ' "QUA_PCS_UNI": "' || T2.QUA_PCS_UNI || '",' || + ' "MOT": "' || T2.MOT || '",' || + ' "LEADING_ITEM_KEY": "' || T2.LEADING_ITEM_KEY || '",' || + ' "REF_ITEM_KEY": "' || T2.REF_ITEM_KEY || '",' || + ' "REF_ROOT_KEY": "' || T2.REF_ROOT_KEY || '",' || + --   ' "TRQ_ID": "'|| T2.TRQ_ID  || '",'|| +
+--         --   ' "TRQ_ITEM_ID": "'|| T2.TRQ_ITEM_ID  || '",'|| +
+--         ' "TRQ_CAT": "' || T1.TRQ_CAT || '",' || + ' "REF_TRQ_ITEM_KEY": "' || T2.REF_TRQ_ITEM_KEY || '",' || + ' "REF_TRQ_ROOT_KEY": "' || T2.REF_TRQ_ROOT_KEY || '",' || + ' "PLATENUMBER": "' || T2.PLATENUMBER || '",' || + ' "SCHED_KEY": "' || T2.SCHED_KEY || '",' || + --   ' "SCHED_DEP": "'|| T2.SCHED_DEP  || '",'|| +
+--         ' "VOYAGE_ID": "' || T2.VOYAGE_ID || '",' || + ' "VESSEL_ID": "' || T2.VESSEL_ID || '",' || + --   ' "PROVISION_REQ": "'|| T2.PROVISION_REQ  || '",'|| +
+--         ' "CHANGED_ON": "' || T1.CHANGED_ON || '",' || + ' "RES_ID": "' || t2.res_id || + '"}}',
+--         '$'
+--     ) AS jsonattributes,
+--     to_timestamp(t1.changed_on) AS changedon
+-- FROM "sap.tm.trp.db.semantic.order::v_transportation_unit" t1
+--     INNER JOIN "sap.tm.trp.db.semantic.order::v_transportation_unit_item_attributes" t2 ON t1.db_key = t2.parent_key
+-- WHERE t2.item_cat = 'TUR'
+--     AND (
+--         :tu_att_last_update_time IS NULL
+--         OR to_timestamp(t1.changed_on) > add_seconds(:tu_att_last_update_time, -1 * 60 * 60 * 1)
+--     );
 END;

@@ -935,6 +935,24 @@
             "object": "/SAPAPO/RES_HEAD"
         }
     },
+    "sap.tm.trp.db.semantic::/SAPAPO/LOC": {
+        "target": {
+            "schema.configure": "trp4_tm94_tm_table_grantor/schema",
+            "object": "/SAPAPO/LOC"
+        }
+    },
+    "sap.tm.trp.db.semantic::/TRP/RES_SHTRK": {
+        "target": {
+            "schema.configure": "trp4_tm94_tm_table_grantor/schema",
+            "object": "/TRP/RES_SHTRK"
+        }
+    },
+    "sap.tm.trp.db.semantic::/TRP/RES_TRKMAP": {
+        "target": {
+            "schema.configure": "trp4_tm94_tm_table_grantor/schema",
+            "object": "/TRP/RES_TRKMAP"
+        }
+    },
     "sap.tm.trp.db.semantic.order::v_transportation_unit_stage": {
         "target": {
             "schema.configure": "trp_tm_object_grantor/schema",
@@ -1042,7 +1060,7 @@
             "schema.configure": "trp_tm_object_grantor/schema",
             "object": "sap.tm.trp.db.semantic.common::t_resource_category_set"
         }
-    },
+    },    
     "sap.tm.trp.db.semantic.resource::v_resource_category": {
         "target": {
             "schema.configure": "trp_tm_object_grantor/schema",
@@ -1053,12 +1071,6 @@
         "target": {
             "schema.configure": "trp4_rv_object_grantor/schema",
             "object": "sap.tm.trp.db.systemmanagement.customization::t_general_parameters"
-        }
-    },
-    "sap.tm.trp.db.systemmanagement::t_config_cust": {
-        "target": {
-            "schema.configure": "trp4_rv_object_grantor/schema",
-            "object": "sap.tm.trp.db.systemmanagement::t_config_cust"
         }
     },
     "sap.tm.trp.db.systemmanagement.customization::t_resource_category_settings": {
@@ -1090,7 +1102,7 @@
             "schema.configure": "trp4_rv_object_grantor/schema",
             "object": "sap.tm.trp.db.filter::t_location_filter_region"
         }
-    },
+    },        
     "sap.tm.trp.db.systemmanagement::t_location_group": {
         "target": {
             "schema.configure": "trp4_rv_object_grantor/schema",
@@ -1102,7 +1114,7 @@
             "schema.configure": "trp4_rv_object_grantor/schema",
             "object": "sap.tm.trp.db.systemmanagement::t_location_group_item"
         }
-    },
+    },    
     "sap.tm.trp.db.systemmanagement::t_region_group": {
         "target": {
             "schema.configure": "trp4_rv_object_grantor/schema",
@@ -1114,7 +1126,7 @@
             "schema.configure": "trp4_rv_object_grantor/schema",
             "object": "sap.tm.trp.db.systemmanagement::t_region_group_item"
         }
-    },
+    },    
     "sap.tm.trp.db.systemmanagement::t_equipment_group": {
         "target": {
             "schema.configure": "trp4_rv_object_grantor/schema",
@@ -1138,7 +1150,7 @@
             "schema.configure": "trp4_rv_object_grantor/schema",
             "object": "sap.tm.trp.db.filter::t_equipment_filter_equipment"
         }
-    },
+    },    
     "sap.tm.trp.db.leasecontract::t_lease_contract_type": {
         "target": {
             "schema.configure": "trp4_rv_object_grantor/schema",
@@ -1174,7 +1186,7 @@
             "schema.configure": "trp4_rv_object_grantor/schema",
             "object": "sap.tm.trp.db.leasecontract::t_lease_contract_per_diem"
         }
-    },
+    },    
     "sap.tm.trp.db.stock::t_stock_config": {
         "target": {
             "schema.configure": "trp4_rv_object_grantor/schema",
@@ -1215,6 +1227,12 @@
         "target": {
             "schema.configure": "trp4_rv_object_grantor/schema",
             "object": "sap.tm.trp.db.filter::t_attribute_group_item_node_values"
+        }
+    },
+    "sap.tm.trp.db.systemmanagement::t_config_cust": {
+        "target": {
+            "schema.configure": "trp4_rv_object_grantor/schema",
+            "object": "sap.tm.trp.db.systemmanagement::t_config_cust"
         }
     },
     "SAP_TRP_DB_MDM_RESOURCECATEGORIES": {
@@ -1378,5 +1396,5 @@
             "schema.configure": "trp4_rv_object_grantor/schema",
             "object": "sap.tm.trp.db.filter::t_attribute_group_attribute"
         }
-    }
+    }   
 }

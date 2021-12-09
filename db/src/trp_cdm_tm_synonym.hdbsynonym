@@ -168,6 +168,9 @@
     "sap.tm.trp.db.semantic.resource::v_resource_master": {},
     "sap.tm.trp.db.semantic.resource::v_resource_status": {},
     "sap.tm.trp.db.semantic::/SAPAPO/RES_HEAD": {},
+    "sap.tm.trp.db.semantic::/SAPAPO/LOC": {},
+    "sap.tm.trp.db.semantic::/TRP/RES_SHTRK": {},
+    "sap.tm.trp.db.semantic::/TRP/RES_TRKMAP": {},
     "sap.tm.trp.db.semantic::/TRP/RES_TRKLOG": {},
     "sap.tm.trp.db.semantic::/SCMB/RESTMSHD": {},
     "sap.tm.trp.db.semantic.resource::v_resource_downtime": {},
@@ -224,9 +227,9 @@
     "SAP_TRP_DB_MDM_ATTRIBUTEFILTERS": {},
     "SAP_TRP_DB_MDM_ATTRIBUTEFILTERITEMS": {},
     "SAP_TRP_DB_MDM_ATTRIBUTEFILTERITEMVALUES": {},
-    "SAP_TRP_DB_MDM_CUSTOMERCONFIG": {},
+    "SAP_TRP_DB_MDM_CUSTOMERCONFIG": {},    
     "SAP_TRP_DB_MDM_SYSTEMCONNECTIONSETTINGS":{},
     "SAP_TRP_DB_MDM_RESOURCESETTINGS":{},
     "SAP_TRP_DB_MDM_ATTRIBUTES":{},
-    "sap.tm.trp.db.filter::t_attribute_group_attribute":{}
+    "sap.tm.trp.db.filter::t_attribute_group_attribute":{} 
 }

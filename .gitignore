@@ -16,7 +16,6 @@ scans/
 *_mta_build_tmp
 *.mtar
 mta_archives/
-mta-op-*
 
 # Other
 .DS_Store
@@ -30,3 +29,4 @@ package-lock.json
 # IDEs
 .vscode
 .idea
+SAP_TRP_CDM_XA0.mtaext

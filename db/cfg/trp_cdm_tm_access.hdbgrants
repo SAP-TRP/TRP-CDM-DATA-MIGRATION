@@ -1,6 +1,6 @@
 {
 	"trp_cdm_object_grantor": {
-		"object_owner": {
+		"object_owner": { 
 			"container_roles": [
 				"sap.tm.trp.db.semantic.roles::TM94AccessSchemaAdmin#"
 			]
@@ -12,7 +12,7 @@
 		}
 	},
 	"trp_tm_object_grantor": {
-		"object_owner": {
+		"object_owner": { 
 			"container_roles": [
 				"sap.tm.trp.db.semantic.roles::TM94AccessSchemaAdmin#"
 			]
@@ -24,7 +24,7 @@
 		}
 	},
 	"trp4_rv_object_grantor": {
-		"object_owner": {
+		"object_owner": { 
 			"container_roles": [
 				"sap.tm.trp.roles::TrpRvAccessSchemaAdmin#"
 			]
@@ -36,7 +36,7 @@
 		}
 	},
 	"trp5_rv_object_grantor": {
-		"object_owner": {
+		"object_owner": { 
 			"container_roles": [
 				"sap.tm.trp.roles::TrpRvAccessSchemaAdmin#"
 			]
@@ -48,7 +48,7 @@
 		}
 	},
 	"trp4_tm94_tm_table_grantor": {
-		"object_owner": {
+		"object_owner": { 
 			"container_roles": [
 				"trp::TMSelectWithGrant#"
 			]

@@ -1,39 +1,39 @@
-ID: SAP_TRP_CDM_DATA_MIGRATION
+ID: SAP_TRP_CDM_DATA_MIGRATION_REL
 _schema-version: "3.1"
 version: 1.0.0
-
 modules:
+
   - name: trp-cdm-migration-db
     type: hdb
     path: db
     requires:
-      - name: TRP_CDM_DEV5
+      - name: trp_hdi_cdm_db
         group: SERVICE_REPLACEMENTS
         properties:
           key: trp_cdm_object_grantor
-          service: "~{trp-cdm-hdi-service-name}"
-      - name: TRP_TM_DB
+          service: "~{trp_cdm_hdi_container_srv}"
+      - name: TRP_TM
         group: SERVICE_REPLACEMENTS
         properties:
           key: trp_tm_object_grantor
-          service: "~{trp-tm-hdi-service-name}"
-      - name: TRP4_RV_DB
+          service: "~{trp_tm94_object_grantor_srv}"
+      - name: trp4_hdi_rv_db
         group: SERVICE_REPLACEMENTS
         properties:
           key: trp4_rv_object_grantor
-          service: "~{trp4-rv-hdi-service-name}"
-      - name: TRP5_RV_DB
+          service: "~{trp4_rv_hdi_container_srv}" 
+      - name: trp_hdi_rv2_db
         group: SERVICE_REPLACEMENTS
         properties:
           key: trp5_rv_object_grantor
-          service: "~{trp5-rv-hdi-service-name}"
+          service: "~{trp_hdi_rv_container_srv}"              
       - name: trp-cdm-migration-hdi
         properties:
           TARGET_CONTAINER: "~{trp-cdm-migration-hdi-service-name}"
       - name: SAP_TRP_SYNONYM_GRANTOR_SRV
         group: SERVICE_REPLACEMENTS
-        properties:
-            key: trp4_tm94_tm_table_grantor
+        properties: 
+            key: trp4_tm94_tm_table_grantor                
             service: '~{trp4_tm94_tm_table_grantor_srv}'
 
   - name: trp-cdm-migration-srv
@@ -42,34 +42,35 @@ modules:
     requires:
       - name: TRP_SCH_JOBS
       - name: trp-cdm-migration-hdi
-
+  
 resources:
+
   - name: trp-cdm-migration-hdi
     properties:
       trp-cdm-migration-hdi-service-name: "${service-name}"
     type: com.sap.xs.hdi-container
     parameters:
       service-tags:
-        - trp-cdm-migration-db
+        - trp-cdm-migration-db      
 
-  - name: TRP_CDM_DEV5
+  - name: trp_hdi_cdm_db
     properties:
-      trp-cdm-hdi-service-name: "${service-name}"
+      trp_cdm_hdi_container_srv: "${service-name}"
     type: org.cloudfoundry.existing-service
 
-  - name: TRP_TM_DB
+  - name: TRP_TM
     properties:
-      trp-tm-hdi-service-name: "${service-name}"
+      trp_tm94_object_grantor_srv: "${service-name}"
     type: org.cloudfoundry.existing-service
 
-  - name: TRP4_RV_DB
+  - name: trp4_hdi_rv_db
     properties:
-      trp4-rv-hdi-service-name: "${service-name}"
+      trp4_rv_hdi_container_srv: "${service-name}"
     type: org.cloudfoundry.existing-service
 
-  - name: TRP5_RV_DB
+  - name: trp_hdi_rv2_db
     properties:
-      trp5-rv-hdi-service-name: "${service-name}"
+      trp_hdi_rv_container_srv: "${service-name}"
     type: org.cloudfoundry.existing-service
 
   - name: TRP_SCH_JOBS
