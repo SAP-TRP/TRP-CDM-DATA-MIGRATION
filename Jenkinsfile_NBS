@@ -1,0 +1,62 @@
+#!/ugroovysr/bin/env 
+@Library(['piper-lib','piper-lib-os']) _
+       
+        
+
+
+pipeline {
+	node('NodeJS12')   
+    agent any
+    environment {
+        
+        QA_EMAIL_RECIPIENTS = 'raja.kumar@sap.com'
+	    GIT_COMMIT_DETAILS = sh(script: 'git log --format="medium" -1 ${GIT_COMMIT}', , returnStdout: true)
+       
+    }
+   
+    options {
+        ansiColor 'xterm'
+       
+    }
+    stages {
+        stage('Initial pipeline') {
+            steps {
+                lock(resource: "${env.JOB_NAME}/10", inversePrecedence: true) {
+                    milestone 10
+                    setupPipelineEnvironment script: this
+                    dir(WORKSPACE) {
+                        stash includes: '*.mtaext', name: 'mtaext'
+                    }
+                }
+                script {
+                    piperConfig = globalPipelineEnvironment.configuration
+                }
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                lock(resource: "${env.JOB_NAME}/30", inversePrecedence: true) {
+                    milestone 30
+                    durationMeasure(script: this, measurementName: "build_duration") {
+                     sh 'npm install mbt -g'
+  
+                    }
+                }
+            }
+        }
+    }
+    post {
+        always {
+           
+            cleanWs()
+             emailext(
+                        subject: "A new Version of ${env.JOB_NAME} has been triggered",
+		        body: "GITHUB COMMIT DETAILS : ${env.GIT_COMMIT_DETAILS}",
+                        to: "${env.QA_EMAIL_RECIPIENTS}".trim(),
+                        recipientProviders: [requestor()],
+                        mimeType: 'text/html'
+                    )
+        }
+    }
+}
