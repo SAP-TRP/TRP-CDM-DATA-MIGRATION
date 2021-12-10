@@ -5,8 +5,8 @@
 
 
 pipeline {
-	node('NodeJS12')   
     agent any
+    tools {nodejs "NodeJS12"}  
     environment {
         
         QA_EMAIL_RECIPIENTS = 'raja.kumar@sap.com'
